@@ -48,7 +48,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
             userState.select.push(messageText);
             userState.state = 'waiting_tags_adicionar';   
             await saveUserState(env, userId, userState);
-            await sendMessage(`Sr. ${userName},\nPara otimizar a pesquisa, digite tags que descrevam o link, separadas por vírgulas (,).:(separe por virgulas(,))`, chatId, env);
+            await sendMessage(`Sr. ${userName},\nPara otimizar a pesquisa, digite tags que descrevam o link, separadas por vírgulas (,).:`, chatId, env);
             return new Response('Aguardando tags', { status: 200 });     
                 break;
 
@@ -65,7 +65,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
         case normalize('waiting_visibility_adicionar'):
             userState.procesCont = 0;
             const visibility = {"ocultar":"hidden", "mostrar":"show", "fixar":"pin"}
-            const visibilitySafe = visibility[messageText];
+            const visibilitySafe = visibility[normalize(messageText)];
             if(!visibilitySafe){
                 await sendMessage(`Porfavor Sr. ${userName},\nInforme uma das opções válidas abaixo.`, chatId, env);
                 await sendMessage("/ocultar   |   /mostrar   |   /fixar", chatId, env);
