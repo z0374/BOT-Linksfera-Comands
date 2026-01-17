@@ -76,7 +76,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
             userState.state = 'waiting_confirm_adicionar';   
             await saveUserState(env, userId, userState);
             const adding = userState.select;
-            await sendMessage(`Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}`, chatId, env);
+            await sendMessage(`Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${adding[5]}\n\nTags:\n   ${adding[4]}`, chatId, env);
             await sendMessage("Deseja adicionar este link?\n/SIM   |   /NAO", chatId, env);
                 return new Response('Aguardando confirmação', { status: 200 });     
                     break;
