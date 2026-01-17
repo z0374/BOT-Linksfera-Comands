@@ -66,6 +66,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
 
         case normalize('waiting_visibility_adicionar'):
             userState.procesCont = 0;
+            userState.state = 'waiting_confirm_adicionar';
             const visibilitySafe = visibility[normalize(messageText)];
             if(!visibilitySafe){
                 await sendMessage(`Porfavor Sr. ${userName},\nInforme uma das opções válidas abaixo.`, chatId, env);
@@ -73,7 +74,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
                     return new Response('Aguardando visibilidade', { status: 200 });
                         break;
             }
-            userState.state = 'waiting_confirm_adicionar';   
+            userState.select.push(visibilitySafe);
             await saveUserState(env, userId, userState);
             const adding = userState.select;
             await sendMessage(`Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${(await normalize(messageText)).toUpperCase()}\n\nTags:\n   ${adding[4]}`, chatId, env);
@@ -89,7 +90,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
                     text: userState.select[2],
                     url: userState.select[3],
                     tags: userState.select[4],
-                    visible: visibilitySafe
+                    visible: userState.select[5]
                 }
                 await yesOrNo([JSON.stringify(adding), 'link'], ['assets', 'data,type'], userId, chatId, userState, messageText, env);
             } catch (error) {
@@ -97,7 +98,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
             }
                 return new Response('Link Adicionado', { status: 200 }); 
                     break;
-                    
+
         default:
             break;
     }
