@@ -1,9 +1,10 @@
 import { commands_manifest } from "../../engine/src/services/commands";
 import { normalize } from "../../engine/src/utils/formatters.js";
 
+async function linksfera(userState, messageText, userId, chatId, userName, update, env){
+
 const comandLinksfera = normalize(commands_manifest[0].name);
 
-async function linksfera(userState, messageText, userId, chatId, userName, update, env){
         // 1. Lógica de Proteção contra Loop e Contagem de Processos
     if (userState.procesCont > 3) {
         await sendMessage('falha na requisição (loop detectado)', chatId, env);
