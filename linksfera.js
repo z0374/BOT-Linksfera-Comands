@@ -3,7 +3,7 @@ import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendM
 async function linksfera(userState, messageText, userId, chatId, userName, update, env){
 
 const comandLinksfera = normalize(commands_manifest[0].name);
-
+await sendCallBackMessage("comandLinksfera - " + comandLinksfera, chatId, env);
         // 1. Lógica de Proteção contra Loop e Contagem de Processos
     if (userState.procesCont > 3) {
         await sendMessage('falha na requisição (loop detectado)', chatId, env);
@@ -31,7 +31,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
 
     // Determina a seção ativa para roteamento
     let sectionName = (((userState.state).toLowerCase()).split('_'))[0];
-
+await sendCallBackMessage("sectionName - " + sectionName, chatId, env);
     // Roteamento para a função de fluxo correspondente
     switch (normalize(sectionName)) {
 
