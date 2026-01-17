@@ -89,7 +89,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
                     text: userState.select[2],
                     url: userState.select[3]
                 }
-                yesOrNo(adding, ["assets", "link"], userId, chatId, userState, messageText, env);
+                await yesOrNo(adding, ["assets", "link"], userId, chatId, userState, messageText, env);
             } catch (error) {
                 await sendCallBackMessage("Erro ao adicionar link: " + error.stack, chatId, env);
             }
