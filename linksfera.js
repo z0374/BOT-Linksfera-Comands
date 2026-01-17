@@ -1,5 +1,4 @@
-import { commands_manifest } from "../../engine/src/services/commands";
-import { normalize } from "../../engine/src/utils/formatters.js";
+import { commands_manifest, normalize } from "../../engine/engine.index.js";
 
 async function linksfera(userState, messageText, userId, chatId, userName, update, env){
 
@@ -17,7 +16,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
     // 2. Lógica de Atualização de Estado Composto (Ex: waiting_section -> waiting_section_configuracao)
     if (userState.state == "waiting_section" || userState.state.includes("waiting_comand")) {
         if (messageText == '/ver_dataSave_da_pagina') {
-            return await handleVerdataSaveFlow(userState, messageText, userId, chatId, userName, update, env);
+            //return await handleVerdataSaveFlow(userState, messageText, userId, chatId, userName, update, env);
         } else {
             userState.state += '_' + await normalize(messageText);
             await saveUserState(env, userId, userState);
@@ -31,8 +30,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
     }
 
     // Determina a seção ativa para roteamento
-    let sectionActive = (((userState.state).toLowerCase()).split('_'))[0];
-    let sectionName = sectionActive.find(name => [comandLinksfera, 'Adicionar', 'Editar', 'Deletar', 'configuracao', 'ver'].includes(name));
+    let sectionName = (((userState.state).toLowerCase()).split('_'))[0];
 
     // Roteamento para a função de fluxo correspondente
     switch (normalize(sectionName)) {
