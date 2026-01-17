@@ -60,7 +60,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
             userState.state = 'waiting_visibility_adicionar';   
             await saveUserState(env, userId, userState);
             await sendMessage(`Por fim Sr. ${userName},\nSelecione a visibilidade do link.:`, chatId, env);
-            await sendMessage("/ocultar   |   /mostrar   |   /fixar", chatId, env);
+            await sendMessage("/OCULTAR   |   /MOSTRAR   |   /FIXAR", chatId, env);
                 return new Response('Aguardando visibilidade', { status: 200 });     
                     break;
 
@@ -90,7 +90,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
                     text: userState.select[2],
                     url: userState.select[3]
                 }
-                await yesOrNo(adding, ["assets", "link"], userId, chatId, userState, messageText, env);
+                await yesOrNo([JSON.stringify(adding), 'link'], ['assets', 'data,type'], userId, chatId, userState, messageText, env);
             } catch (error) {
                 await sendCallBackMessage("Erro ao adicionar link: " + error.stack, chatId, env);
             }
