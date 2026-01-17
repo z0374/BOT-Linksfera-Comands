@@ -1,4 +1,4 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, yesOrNo } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo } from "../../engine/engine.index.js";
 
 async function handleItensMenuFlow(userState, messageText, userId, chatId, userName, update, env){
     switch (normalize(messageText)) {
@@ -118,7 +118,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
 
         case comandLinksfera:
                 userState.procesCont = 0;
-                userState.proces = messageText.toLowerCase();
+                userState.proces = normalize(messageText);
                 userState.state = 'waiting_comand_portal';
                 await saveUserState(env, userId, userState);
                 await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /Editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
