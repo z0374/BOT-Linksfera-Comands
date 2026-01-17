@@ -46,6 +46,33 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
         case normalize('waiting_url_adicionar'):
             userState.procesCont = 0;
             userState.select.push(messageText);
+            userState.state = 'waiting_tags_adicionar';   
+            await saveUserState(env, userId, userState);
+            await sendMessage(`Sr. ${userName},\nPara otimizar a pesquisa, digite tags que descrevam o link, separadas por vírgulas (,).:(separe por virgulas(,))`, chatId, env);
+            return new Response('Aguardando tags', { status: 200 });     
+                break;
+
+        case normalize('waiting_tags_adicionar'):
+            userState.procesCont = 0;
+            userState.select.push(messageText);
+            userState.state = 'waiting_visibility_adicionar';   
+            await saveUserState(env, userId, userState);
+            await sendMessage(`Por fim Sr. ${userName},\nSelecione a visibilidade do link.:`, chatId, env);
+            await sendMessage("/ocultar   |   /mostrar   |   /fixar", chatId, env);
+                return new Response('Aguardando visibilidade', { status: 200 });     
+                    break;
+
+        case normalize('waiting_visibility_adicionar'):
+            userState.procesCont = 0;
+            const visibility = {"ocultar":"hidden", "mostrar":"show", "fixar":"pin"}
+            const visibilitySafe = visibility[messageText];
+            if(!visibilitySafe){
+                await sendMessage(`Porfavor Sr. ${userName},\nInforme uma das opções válidas abaixo.`, chatId, env);
+                await sendMessage("/ocultar   |   /mostrar   |   /fixar", chatId, env);
+                    return new Response('Aguardando visibilidade', { status: 200 });
+                        break;
+            }
+            userState.select.push(visibilitySafe);
             userState.state = 'waiting_confirm_adicionar';   
             await saveUserState(env, userId, userState);
             const adding = userState.select;
