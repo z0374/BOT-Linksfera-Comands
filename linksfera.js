@@ -1,4 +1,5 @@
 import { commands_manifest } from "../../engine/src/services/commands";
+import { normalize } from "../../engine/src/utils/formatters.js";
 
 const comandLinksfera = normalize(commands_manifest[0].name);
 
