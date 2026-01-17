@@ -1,6 +1,8 @@
 import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo } from "../../engine/engine.index.js";
 
 async function handleaddedLink(userState, messageText, userId, chatId, userName, update, env){
+    const visibility = {"ocultar":"hidden", "mostrar":"show", "fixar":"pin"}
+
     switch (normalize(messageText)) {
         case normalize("Adicionar_Link"):
             userState.procesCont = 0;
@@ -64,7 +66,6 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
 
         case normalize('waiting_visibility_adicionar'):
             userState.procesCont = 0;
-            const visibility = {"ocultar":"hidden", "mostrar":"show", "fixar":"pin"}
             const visibilitySafe = visibility[normalize(messageText)];
             if(!visibilitySafe){
                 await sendMessage(`Porfavor Sr. ${userName},\nInforme uma das opções válidas abaixo.`, chatId, env);
@@ -76,7 +77,7 @@ async function handleaddedLink(userState, messageText, userId, chatId, userName,
             userState.state = 'waiting_confirm_adicionar';   
             await saveUserState(env, userId, userState);
             const adding = userState.select;
-            await sendMessage(`Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${adding[5]}\n\nTags:\n   ${adding[4]}`, chatId, env);
+            await sendMessage(`Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${visibilitySafe}\n\nTags:\n   ${adding[4]}`, chatId, env);
             await sendMessage("Deseja adicionar este link?\n/SIM   |   /NAO", chatId, env);
                 return new Response('Aguardando confirmação', { status: 200 });     
                     break;
