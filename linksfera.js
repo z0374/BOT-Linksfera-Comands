@@ -1,6 +1,6 @@
 import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo } from "../../engine/engine.index.js";
 
-async function handleItensMenuFlow(userState, messageText, userId, chatId, userName, update, env){
+async function handleaddedLink(userState, messageText, userId, chatId, userName, update, env){
     switch (normalize(messageText)) {
         case normalize("Adicionar_Link"):
             userState.procesCont = 0;
@@ -141,7 +141,7 @@ try {
                 break;
 
         case normalize('Adicionar'):
-            return await handleVerdataSaveFlow(userState, messageText, userId, chatId, userName, update, env);
+            return await handleaddedLink(userState, messageText, userId, chatId, userName, update, env);
             break;
 
         case normalize('Editar'):
