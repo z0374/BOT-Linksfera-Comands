@@ -1,4 +1,77 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, yesOrNo } from "../../engine/engine.index.js";
+
+async function handleItensMenuFlow(userState, messageText, userId, chatId, userName, update, env){
+    switch (normalize(messageText)) {
+        case normalize("Adicionar_Link"):
+            userState.procesCont = 0;
+            userState.state = 'waiting_titulo_adicionar';   
+            await saveUserState(env, userId, userState);
+            await sendMessage(`Sr. ${userName},\nInforme o título do link.:`, chatId, env);
+            return new Response('Aguardando título', { status: 200 });     
+                break;
+    
+        default:
+            break;
+
+    }
+
+    switch (normalize(userState.state)) {
+        case normalize('waiting_titulo_adicionar'):
+            userState.procesCont = 0;
+            userState.select.push(messageText);
+            userState.state = 'waiting_legenda_adicionar';   
+            await saveUserState(env, userId, userState);
+            await sendMessage(`Agora Sr. ${userName},\nInforme a legenda do link.:`, chatId, env);
+            return new Response('Aguardando legenda', { status: 200 });     
+                break;
+
+        case normalize('waiting_legenda_adicionar'):
+            userState.procesCont = 0;
+            userState.select.push(messageText);
+            userState.state = 'waiting_texto_adicionar';   
+            await saveUserState(env, userId, userState);
+            await sendMessage(`Sr. ${userName},\nInforme o texto do link.:`, chatId, env);
+            return new Response('Aguardando texto', { status: 200 });     
+                break;
+
+        case normalize('waiting_texto_adicionar'):
+            userState.procesCont = 0;
+            userState.select.push(messageText);
+            userState.state = 'waiting_url_adicionar';   
+            await saveUserState(env, userId, userState);
+            await sendMessage(`Por fim Sr. ${userName},\nInforme a url do link.:`, chatId, env);
+            return new Response('Aguardando url', { status: 200 });     
+                break;
+
+        case normalize('waiting_url_adicionar'):
+            userState.procesCont = 0;
+            userState.select.push(messageText);
+            userState.state = 'waiting_confirm_adicionar';   
+            await saveUserState(env, userId, userState);
+            const adding = userState.select;
+            await sendMessage(`Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}`, chatId, env);
+            await sendMessage("Deseja adicionar este link?\n/SIM   |   /NAO", chatId, env);
+                return new Response('Aguardando confirmação', { status: 200 });     
+                    break;
+
+        case normalize('waiting_confirm_adicionar'):
+            try {
+                const adding = {
+                    titulo: userState.select[0],
+                    legenda: userState.select[1],
+                    text: userState.select[2],
+                    url: userState.select[3]
+                }
+                yesOrNo(adding, ["assets", "link"], userId, chatId, userState, messageText, env);
+            } catch (error) {
+                await sendCallBackMessage("Erro ao adicionar link: " + error.stack, chatId, env);
+            }
+                return new Response('Link Adicionado', { status: 200 }); 
+                    break;
+        default:
+            break;
+    }
+}
 
 async function linksfera(userState, messageText, userId, chatId, userName, update, env){
 
@@ -42,11 +115,11 @@ const comandLinksfera = normalize(commands_manifest[0].name);
     switch (normalize(sectionName)) {
 
         case comandLinksfera:
-            userState.procesCont = 0;
+                userState.procesCont = 0;
                 userState.proces = messageText.toLowerCase();
                 userState.state = 'waiting_comand_portal';
                 await saveUserState(env, userId, userState);
-                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_link - /Editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
+                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /Editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
                 return new Response('Aguardando comando', { status: 200 });
                 break;
 
