@@ -1,4 +1,4 @@
-import { commands_manifest } from "../../engine/commands.manifest.js";
+import { commands_manifest } from "../../engine/src/services/commands";
 
 const comandLinksfera = normalize(commands_manifest[0].name);
 
