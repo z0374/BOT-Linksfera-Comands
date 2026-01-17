@@ -76,7 +76,7 @@ async function handleItensMenuFlow(userState, messageText, userId, chatId, userN
 async function linksfera(userState, messageText, userId, chatId, userName, update, env){
 
 const comandLinksfera = normalize(commands_manifest[0].name);
-
+try {
         // 1. Lógica de Proteção contra Loop e Contagem de Processos
     if (userState.procesCont > 3) {
         await sendMessage('falha na requisição (loop detectado)', chatId, env);
@@ -85,7 +85,14 @@ const comandLinksfera = normalize(commands_manifest[0].name);
     } else {
         userState.procesCont++;
     }
-
+    
+} catch (error) {
+    const errorMessage = "Erro ao contar os processos: " + error.stack
+    await sendCallBackMessage(errorMessage, chatId, env);
+    console.error(errorMessage);
+    return new Response(errorMessage, {status: 200});
+}
+try {
     // 2. Lógica de Atualização de Estado Composto (Ex: waiting_section -> waiting_section_configuracao)
     if (userState.state == "waiting_section" || userState.state.includes("waiting_comand")) {
         if (messageText == '/ver_dataSave_da_pagina') {
@@ -95,7 +102,15 @@ const comandLinksfera = normalize(commands_manifest[0].name);
             await saveUserState(env, userId, userState);
         }
     }
+    
+} catch (error) {
+    const errorMessage = "Erro ao atualizar estados compostos: " + error.stack
+    await sendCallBackMessage(errorMessage, chatId, env);
+    console.error(errorMessage);
+    return new Response(errorMessage, {status: 200});
+}
 
+try {
     // 3. Verifica estado de recebimento de mídia (Inicializa o fluxo se a mensagem for um arquivo)
     // Se não há um processo ativo e a mensagem NÃO é apenas texto, inicializa o fluxo de mídia.
     if (userState.proces === '' && (update.message?.photo || update.message?.document || update.message?.video) && !userState.state) {
@@ -152,6 +167,12 @@ const comandLinksfera = normalize(commands_manifest[0].name);
             await sendMessage(mensagem, chatId, env);
             await sendMessage(" /"+ comandLinksfera +"\n /comandos - /encerrar", chatId, env);
             return new Response(mensagem, { status: 200 });
+    }
+    } catch (error) {
+        const errorMessage = "Erro ao processar comandos do BOT "+ comandLinksfera +": " + error.stack
+        await sendCallBackMessage(errorMessage, chatId, env);
+        console.error(errorMessage);
+        return new Response(errorMessage, {status: 200});
     }
 }
 
