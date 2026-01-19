@@ -1,4 +1,5 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead } from "../../engine/engine.index.js";
+import e from "express";
+import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate } from "../../engine/engine.index.js";
 
 async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
     switch (normalize(messageText)) {
@@ -10,11 +11,11 @@ async function handleEditLink(userState, messageText, userId, chatId, userName, 
                 const message = [];
                 for(const link of links){
                     
-            const dataLinks = JSON_parse(link.data);
+            const dataLinks = JSON.parse(link.data);
                     message.push(`
     <b>Titulo: ${dataLinks.titulo}</b>
 Link: ${dataLinks.url}
-_______________ /Selecionar_link${link.id}\n\n\n
+_______________ /Selecionar_link${link.id}_editar\n\n\n
                         `);
                 }
             await sendMessage(`Olá Sr. ${userName},\nEscolha qual registro deseja EDITAR.:`, chatId, env);
@@ -27,6 +28,7 @@ _______________ /Selecionar_link${link.id}\n\n\n
     }
 
     switch (normalize(userState.state)) {
+
         case normalize('waiting_list_editar'):
             userState.procesCont = 0;
             userState.titulo = parseInt(messageText.replace(/\D+/g, ""));  
@@ -36,7 +38,28 @@ _______________ /Selecionar_link${link.id}\n\n\n
 
         case normalize('waiting_confirm_editar'):
             userState.procesCont = 0;
-            userState = null;  
+            switch (normalize(messageText)) {
+                case normalize('SIM'):
+                    const adding = {
+                        titulo: userState.select[0],
+                        legenda: userState.select[1],
+                        text: userState.select[2],
+                        url: userState.select[3],
+                        tags: userState.select[4],
+                        visible: userState.select[5]
+                    }
+                    await dataUpdate([adding, userState.titulo], ['assets', 'data'], chatId, env);
+                    userState = null;  
+                    break;
+
+                case normalize('NAO'):
+                    userState.state = "waiting_list_editar";
+                    await sendMessage("Deseja /encerrar ou /reiniciar !", chatId, env);
+                    break;
+            
+                default:
+                    break;
+            }
             await saveUserState(env, userId, userState);
                 break;
     
