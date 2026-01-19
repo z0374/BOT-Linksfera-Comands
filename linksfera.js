@@ -35,8 +35,9 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
             userState.titulo = parseInt(messageText.replace(/\D+/g, ""));  
             await saveUserState(env, userId, userState);
             messageText = "Adicionar_Link";
-            return await handleAddedLink(userState, messageText, userId, chatId, userName, update, env)
-                break;
+            await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Iniciando Edição", {status: 200});
+                    break;
 
         case normalize('waiting_confirm_editar'):
             userState.procesCont = 0;
