@@ -2,21 +2,34 @@ import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendM
 
 async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
     switch (normalize(messageText)) {
-        case normalize('Editar_link'):
+        case normalize('editarar_link'):
             userState.procesCont = 0;
-            userState.state = 'waiting_list_edit';   
+            userState.state = 'waiting_list_editar';   
             await saveUserState(env, userId, userState);
-            const links = JSON_parse((await dataRead("table", {type:link}, env)).data);
+            const links = await dataRead("table", {type:link}, env);
                 const message = [];
                 for(const link of links){
+            const dataLinks = JSON_parse(links.data);
                     message.push(`
-    <b>Titulo: ${link.titulo}</b>\n
-Link: ${link.url}\n_______________
+    <b>Titulo: ${dataLinks.titulo}</b>\n
+Link: ${dataLinks.url}\n_______________/Selecionar_link${link.id}
                         `);
                 }
             await sendMessage(`Olá Sr. ${userName},\nEscolha qual registro deseja EDITAR.:`, chatId, env);
             await sendMessage(message.join("\n\n"), chatId, env);
             return new Response('Aguardando título', { status: 200 });     
+                break;
+    
+        default:
+            break;
+    }
+
+    switch (normalize(userState.state)) {
+        case normalize('waiting_list_editar'):
+            userState.procesCont = 0;
+            userState.titulo = parseInt(messageText.replace(/\D+/g, ""));  
+            await saveUserState(env, userId, userState);
+            await handleAddedLink(userState, messageText, userId, chatId, userName, update, env)
                 break;
     
         default:
@@ -29,7 +42,7 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
     switch (normalize(messageText)) {
         case normalize("Adicionar_Link"):
             userState.procesCont = 0;
-            userState.state = 'waiting_titulo_added';   
+            userState.state = 'waiting_titulo_Adicionar';   
             await saveUserState(env, userId, userState);
             await sendMessage(`Sr. ${userName},\nInforme o título do link.:`, chatId, env);
             return new Response('Aguardando título', { status: 200 });     
@@ -41,55 +54,55 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
     }
 
     switch (normalize(userState.state)) {
-        case normalize('waiting_titulo_added'):
+        case normalize('waiting_titulo_Adicionar'):
             userState.procesCont = 0;
             userState.select.push(messageText);
-            userState.state = 'waiting_legenda_added';   
+            userState.state = 'waiting_legenda_Adicionar';   
             await saveUserState(env, userId, userState);
             await sendMessage(`Agora Sr. ${userName},\nInforme a legenda do link.:`, chatId, env);
             return new Response('Aguardando legenda', { status: 200 });     
                 break;
 
-        case normalize('waiting_legenda_added'):
+        case normalize('waiting_legenda_Adicionar'):
             userState.procesCont = 0;
             userState.select.push(messageText);
-            userState.state = 'waiting_texto_added';   
+            userState.state = 'waiting_texto_Adicionar';   
             await saveUserState(env, userId, userState);
             await sendMessage(`Sr. ${userName},\nInforme o texto do link.:`, chatId, env);
             return new Response('Aguardando texto', { status: 200 });     
                 break;
 
-        case normalize('waiting_texto_added'):
+        case normalize('waiting_texto_Adicionar'):
             userState.procesCont = 0;
             userState.select.push(messageText);
-            userState.state = 'waiting_url_added';   
+            userState.state = 'waiting_url_Adicionar';   
             await saveUserState(env, userId, userState);
             await sendMessage(`Por fim Sr. ${userName},\nInforme a url do link.:`, chatId, env);
             return new Response('Aguardando url', { status: 200 });     
                 break;
 
-        case normalize('waiting_url_added'):
+        case normalize('waiting_url_Adicionar'):
             userState.procesCont = 0;
             userState.select.push(messageText);
-            userState.state = 'waiting_tags_added';   
+            userState.state = 'waiting_tags_Adicionar';   
             await saveUserState(env, userId, userState);
             await sendMessage(`Sr. ${userName},\nPara otimizar a pesquisa, digite tags que descrevam o link, separadas por vírgulas (,).:`, chatId, env);
             return new Response('Aguardando tags', { status: 200 });     
                 break;
 
-        case normalize('waiting_tags_added'):
+        case normalize('waiting_tags_Adicionar'):
             userState.procesCont = 0;
             userState.select.push(messageText);
-            userState.state = 'waiting_visibility_added';   
+            userState.state = 'waiting_visibility_Adicionar';   
             await saveUserState(env, userId, userState);
             await sendMessage(`Por fim Sr. ${userName},\nSelecione a visibilidade do link.:`, chatId, env);
             await sendMessage("/OCULTAR   |   /MOSTRAR   |   /FIXAR", chatId, env);
                 return new Response('Aguardando visibilidade', { status: 200 });     
                     break;
 
-        case normalize('waiting_visibility_added'):
+        case normalize('waiting_visibility_Adicionar'):
             userState.procesCont = 0;
-            userState.state = 'waiting_confirm_added';
+            userState.state = 'waiting_confirm_Adicionar';
             const visibilitySafe = visibility[normalize(messageText)];
             if(!visibilitySafe){
                 await sendMessage(`Porfavor Sr. ${userName},\nInforme uma das opções válidas abaixo.`, chatId, env);
@@ -100,12 +113,19 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
             userState.select.push(visibilitySafe);
             await saveUserState(env, userId, userState);
             const adding = userState.select;
-            await sendMessage(`Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${(await normalize(messageText)).toUpperCase()}\n\nTags:\n   ${adding[4]}`, chatId, env);
-            await sendMessage("Deseja adicionar este link?\n/SIM   |   /NAO", chatId, env);
+            const messagelink = `Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${(await normalize(messageText)).toUpperCase()}\n\nTags:\n   ${adding[4]}`;
+            if(userState.titulo && userState.titulo.length > 0) {
+                const oldLink = JSON.parse((await dataRead("assets", parseInt(userState.titulo), env)).data);
+                const message = `Deseja substituir\n\n${messagelink}\n\npor\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\n???????????????`;
+                await sendMessage(message, chatId, env);
+            }else{
+                await sendMessage(`Deseja adicionar este link?\n\n${messagelink}`, chatId, env);
+            }
+                await sendMessage("\n/SIM   |   /NAO", chatId, env);
                 return new Response('Aguardando confirmação', { status: 200 });     
                     break;
 
-        case normalize('waiting_confirm_added'):
+        case normalize('waiting_confirm_Adicionar'):
             try {
                 const adding = {
                     titulo: userState.select[0],
@@ -174,7 +194,7 @@ try {
     // Determina a seção ativa para roteamento
     let sectionActive = userState.state.toLowerCase().split('_');
 
-    const validSections = [comandLinksfera, 'Adicionar', 'Editar', 'Deletar', 'configuracao', 'ver']
+    const validSections = [comandLinksfera, 'Adicionar', 'editarar', 'Deletar', 'configuracao', 'ver']
     .map(v => v.toLowerCase());
 
     let sectionName =
@@ -190,15 +210,15 @@ try {
                 userState.proces = normalize(messageText);
                 userState.state = 'waiting_comand_portal';
                 await saveUserState(env, userId, userState);
-                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /Editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
+                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /editarar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
                 return new Response('Aguardando comando', { status: 200 });
                 break;
 
-        case normalize('added'):
+        case normalize('Adicionar'):
             return await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
             break;
 
-        case normalize('edit'):
+        case normalize('editar'):
             return await handleEditLink(userState, messageText, userId, chatId, userName, update, env);
             break;
 
