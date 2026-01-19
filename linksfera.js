@@ -48,7 +48,8 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
                         visible: userState.select[5]
                     }
                     await dataUpdate([adding, userState.titulo], ['assets', 'data'], chatId, env);
-                    userState = null;  
+                    userState = null;
+                        return new Response('Atualizando link', { status: 200 });
                     break;
 
                 case normalize('NAO'):
