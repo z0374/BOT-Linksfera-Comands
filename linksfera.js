@@ -1,4 +1,3 @@
-import e from "express";
 import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate } from "../../engine/engine.index.js";
 
 async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
