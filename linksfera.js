@@ -2,17 +2,19 @@ import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendM
 
 async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
     switch (normalize(messageText)) {
-        case normalize('editarar_link'):
+        case normalize('editar_link'):
             userState.procesCont = 0;
             userState.state = 'waiting_list_editar';   
             await saveUserState(env, userId, userState);
-            const links = await dataRead("table", {type:link}, env);
+            const links = await dataRead("assets", {type:'link'}, env);
                 const message = [];
                 for(const link of links){
-            const dataLinks = JSON_parse(links.data);
+                    
+            const dataLinks = JSON_parse(link.data);
                     message.push(`
-    <b>Titulo: ${dataLinks.titulo}</b>\n
-Link: ${dataLinks.url}\n_______________/Selecionar_link${link.id}
+    <b>Titulo: ${dataLinks.titulo}</b>
+Link: ${dataLinks.url}
+_______________ /Selecionar_link${link.id}\n\n\n
                         `);
                 }
             await sendMessage(`Olá Sr. ${userName},\nEscolha qual registro deseja EDITAR.:`, chatId, env);
@@ -30,6 +32,12 @@ Link: ${dataLinks.url}\n_______________/Selecionar_link${link.id}
             userState.titulo = parseInt(messageText.replace(/\D+/g, ""));  
             await saveUserState(env, userId, userState);
             await handleAddedLink(userState, messageText, userId, chatId, userName, update, env)
+                break;
+
+        case normalize('waiting_confirm_editar'):
+            userState.procesCont = 0;
+            userState = null;  
+            await saveUserState(env, userId, userState);
                 break;
     
         default:
@@ -102,7 +110,6 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
 
         case normalize('waiting_visibility_Adicionar'):
             userState.procesCont = 0;
-            userState.state = 'waiting_confirm_Adicionar';
             const visibilitySafe = visibility[normalize(messageText)];
             if(!visibilitySafe){
                 await sendMessage(`Porfavor Sr. ${userName},\nInforme uma das opções válidas abaixo.`, chatId, env);
@@ -111,16 +118,18 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
                         break;
             }
             userState.select.push(visibilitySafe);
-            await saveUserState(env, userId, userState);
             const adding = userState.select;
             const messagelink = `Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${(await normalize(messageText)).toUpperCase()}\n\nTags:\n   ${adding[4]}`;
             if(userState.titulo && userState.titulo.length > 0) {
+                userState.state = 'waiting_confirm_editar';
                 const oldLink = JSON.parse((await dataRead("assets", parseInt(userState.titulo), env)).data);
                 const message = `Deseja substituir\n\n${messagelink}\n\npor\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\n???????????????`;
                 await sendMessage(message, chatId, env);
             }else{
                 await sendMessage(`Deseja adicionar este link?\n\n${messagelink}`, chatId, env);
+                userState.state = 'waiting_confirm_Adicionar';
             }
+            await saveUserState(env, userId, userState);
                 await sendMessage("\n/SIM   |   /NAO", chatId, env);
                 return new Response('Aguardando confirmação', { status: 200 });     
                     break;
@@ -194,7 +203,7 @@ try {
     // Determina a seção ativa para roteamento
     let sectionActive = userState.state.toLowerCase().split('_');
 
-    const validSections = [comandLinksfera, 'Adicionar', 'editarar', 'Deletar', 'configuracao', 'ver']
+    const validSections = [comandLinksfera, 'Adicionar', 'editar', 'Deletar', 'configuracao', 'ver']
     .map(v => v.toLowerCase());
 
     let sectionName =
@@ -210,7 +219,7 @@ try {
                 userState.proces = normalize(messageText);
                 userState.state = 'waiting_comand_portal';
                 await saveUserState(env, userId, userState);
-                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /editarar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
+                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
                 return new Response('Aguardando comando', { status: 200 });
                 break;
 
