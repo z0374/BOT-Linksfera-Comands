@@ -1,7 +1,9 @@
 import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate } from "../../engine/engine.index.js";
 
 async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
+
     switch (normalize(messageText)) {
+
         case normalize('editar_link'):
             userState.procesCont = 0;
             userState.state = 'waiting_list_editar';   
@@ -19,7 +21,7 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
                 }
             await sendMessage(`Olá Sr. ${userName},\nEscolha qual registro deseja EDITAR.:`, chatId, env);
             await sendMessage(message.join("\n\n"), chatId, env);
-            return new Response('Aguardando título', { status: 200 });     
+            return new Response('Aguardando selecionar!', { status: 200 });     
                 break;
     
         default:
@@ -49,7 +51,6 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
                     }
                     await dataUpdate([adding, userState.titulo], ['assets', 'data'], chatId, env);
                     userState = null;
-                        return new Response('Atualizando link', { status: 200 });
                     break;
 
                 case normalize('NAO'):
@@ -61,6 +62,7 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
                     break;
             }
             await saveUserState(env, userId, userState);
+            return new Response('Link atualizado!', { status: 200 }); 
                 break;
     
         default:
