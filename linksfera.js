@@ -247,8 +247,8 @@ try {
                 userState.state = 'waiting_comand_portal';
                 await saveUserState(env, userId, userState);
                 await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
-                return new Response('Aguardando comando', { status: 200 });
-                break;
+                    return new Response('Aguardando comando', { status: 200 });
+                        break;
 
         case normalize('Adicionar'):
             return await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
