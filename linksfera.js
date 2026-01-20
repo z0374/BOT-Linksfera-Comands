@@ -61,6 +61,7 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
                     break;
             
                 default:
+                    await sendMessage("Responda apenas.:\n/SIM   ou   /NAO", chatId, env);
                     break;
             }
             await saveUserState(env, userId, userState);
@@ -147,9 +148,9 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
             userState.select.push(visibilitySafe);
             const adding = userState.select;
             const messagelink = `Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${(await normalize(messageText)).toUpperCase()}\n\nTags:\n   ${adding[4]}`;
-            if(userState.titulo && userState.titulo.length > 0) {
+            if(Number.isInteger(userState.titulo) && userState.titulo > 0) {
                 userState.state = 'waiting_confirm_editar';
-                const oldLink = JSON.parse((await dataRead("assets", parseInt(userState.titulo), env)).data);
+                const oldLink = JSON.parse((await dataRead("assets",{id: parseInt(userState.titulo)}, env)).data);
                 const message = `Deseja substituir\n\n${messagelink}\n\npor\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\n???????????????`;
                 await sendMessage(message, chatId, env);
             }else{
