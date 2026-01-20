@@ -32,10 +32,16 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
 
         case normalize('waiting_list_editar'):
             userState.procesCont = 0;
-            userState.titulo = parseInt(messageText.replace(/\D+/g, ""));  
-            await saveUserState(env, userId, userState);
-            messageText = "Adicionar_Link";
-            await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
+            userState.titulo = parseInt(messageText.replace(/\D+/g, ""));
+            if((!isNaN(userState.titulo))){
+                await saveUserState(env, userId, userState);
+                messageText = "Adicionar_Link";
+                await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
+            }else{
+                messageText = "editar_link";
+                await sendMessage("Registro selecionado inválido.", chatId, env);
+                await handleEditLink(userState, messageText, userId, chatId, userName, update, env);
+            }
                 return new Response("Iniciando Edição", {status: 200});
                     break;
 
@@ -50,8 +56,8 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
                         url: userState.select[3],
                         tags: userState.select[4],
                         visible: userState.select[5]
-                    }
-                    await dataUpdate([adding, userState.titulo], ['assets', 'data'], chatId, env);
+                    };
+                    await dataUpdate([[JSON.stringify(adding)], userState.titulo], ['assets', 'data'], chatId, env);
                     userState = null;
                     break;
 
@@ -151,7 +157,7 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
             if(Number.isInteger(userState.titulo) && userState.titulo > 0) {
                 userState.state = 'waiting_confirm_editar';
                 const oldLink = JSON.parse((await dataRead("assets",{id: parseInt(userState.titulo)}, env)).data);
-                const message = `Deseja substituir\n\n${messagelink}\n\npor\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\n???????????????`;
+                const message = `Deseja substituir\n\n${messagelink}\n\npor\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\n`;
                 await sendMessage(message, chatId, env);
             }else{
                 await sendMessage(`Deseja adicionar este link?\n\n${messagelink}`, chatId, env);
