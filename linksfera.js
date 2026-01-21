@@ -1,27 +1,67 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete } from "../../engine/engine.index.js";
 
-async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
-
-    switch (normalize(messageText)) {
-
-        case normalize('editar_link'):
+async function handleCRUDLink(userState, messageText, userId, chatId, userName, update, env) {
+    
+    switch (normalize(userState.state)) {
+        case normalize("waiting_list_crud"):
             userState.procesCont = 0;
-            userState.state = 'waiting_list_editar';   
+            userState.state = 'waiting_start_crud';
             await saveUserState(env, userId, userState);
             const links = await dataRead("assets", {type:'link'}, env);
-                const message = [];
+            const taskLink = (messageText.split('_'))[0] == 'editar' ? 'EDITAR' : 'DELETAR';
+            const message = [];
                 for(const link of links){
-                    
             const dataLinks = JSON.parse(link.data);
                     message.push(`
     <b>Titulo: ${dataLinks.titulo}</b>
 Link: ${dataLinks.url}
-_______________ /Selecionar_link${link.id}_editar\n\n\n
+_______________ /Selecionar_link${link.id}_${taskLink.toLowerCase()}
                         `);
                 }
-            await sendMessage(`Olá Sr. ${userName},\nEscolha qual registro deseja EDITAR.:`, chatId, env);
-            await sendMessage(message.join("\n\n"), chatId, env);
-            return new Response('Aguardando selecionar!', { status: 200 });     
+            await sendMessage(`Olá Sr. ${userName},\nEscolha qual registro deseja ${taskLink}.:`, chatId, env);
+            await sendMessage(message.join("\n\n\n"), chatId, env);
+            return new Response('Aguardando selecionar!', { status: 200 });
+                break;
+
+        case normalize('waiting_start_crud'):
+            userState.procesCont = 0;
+            userState.titulo = parseInt(messageText.replace(/\D+/g, ""));
+            const oldLink = await dataRead("assets",{id: parseInt(userState.titulo)}, env);
+            if((!isNaN(userState.titulo)) && oldLink.type == 'link'){
+                if((messageText.split("_"))[2] == "editar"){
+                    userState.text = JSON.parse(oldLink.data);
+                    await saveUserState(env, userId, userState);
+                    messageText = "Adicionar_Link";
+                    await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
+                        return new Response("Iniciando Edição !", {status: 200});
+                }else if((messageText.split("_"))[2] == "deletar"){
+                    userState.state = 'waiting_confirm_delete';
+                    await sendMessage(`Titulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}`, chatId, env);
+                    await sendMessage("Deseja excluir este link?\n   /SIM   |   /NAO", chatId, env);
+                    await saveUserState(env, userId, userState);
+                        return new Response("Confirmando deleção !", {status: 200});
+                }
+            }
+                userState.state = "waiting_list_crud";
+                await sendMessage("Registro selecionado inválido.", chatId, env);
+                await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+                    return new Response("Listando novamente !", {status: 200});
+                        break;
+            
+            break;
+    
+        default:
+            break;
+    }
+}
+async function handleDeleteLink(userState, messageText, userId, chatId, userName, update, env) {
+    switch (normalize(messageText)) {
+
+        case normalize('Deletar_link'):
+            userState.procesCont = 0;
+            userState.state = "waiting_list_crud";
+            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Listando Items", {status: 200});
                 break;
     
         default:
@@ -30,22 +70,51 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
 
     switch (normalize(userState.state)) {
 
-        case normalize('waiting_list_editar'):
+        case normalize("waiting_confirm_delete"):
             userState.procesCont = 0;
-            userState.titulo = parseInt(messageText.replace(/\D+/g, ""));
-            const oldLink = await dataRead("assets",{id: parseInt(userState.titulo)}, env);
-            if((!isNaN(userState.titulo)) && oldLink.type == 'link'){
-                userState.text = JSON.parse(oldLink.data);
-                await saveUserState(env, userId, userState);
-                messageText = "Adicionar_Link";
-                await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
-            }else{
-                messageText = "editar_link";
-                await sendMessage("Registro selecionado inválido.", chatId, env);
-                await handleEditLink(userState, messageText, userId, chatId, userName, update, env);
-            }
-                return new Response("Iniciando Edição", {status: 200});
+            switch (normalize(messageText)) {
+                case normalize("SIM"):
+                    userState.state = null;
+                    await saveUserState(env, userId, userState);
+                    await dataDelete("assets", {id:userState.titulo}, env);
+                    await sendMessage(`Link ${userState.titulo} deletado com sucesso !`, chatId, env);
+                    await sendMessage("/linksfera   |   /encerrar", chatId, env);
+                        return new Response("Deletado com sucesso !", {status: 200})
+                            break;
+
+                case normalize('NAO'):
+                    userState.state = null;
+                    await saveUserState(env, userId, userState);
+                    await sendMessage(`Certo Sr. ${userName},\nDeseja /encerrar ou /linksfera ?`, chatId, env);
+                        return new Response("Deletar foi cancelado !", {status: 200});
+                            break;
+            
+            default:
+                await sendMessage("Responda apenas.:\n/SIM   ou   /NAO", chatId, env);
                     break;
+            }
+                break;
+    
+        default:
+            break;
+    }
+}
+
+async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
+
+    switch (normalize(messageText)) {
+
+        case normalize('editar_link'):
+            userState.state = "waiting_list_crud";
+            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Listando Items", {status: 200});
+                break;
+    
+        default:
+            break;
+    }
+
+    switch (normalize(userState.state)) {
 
         case normalize('waiting_confirm_editar'):
             userState.procesCont = 0;
@@ -66,7 +135,8 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
                 case normalize('NAO'):
                     userState.state = "waiting_list_editar";
                     await sendMessage("Deseja /encerrar ou /reiniciar !", chatId, env);
-                    break;
+                        return new Response('Atualização de link encerrada !', { status: 200 }); 
+                            break;
             
                 default:
                     await sendMessage("Responda apenas.:\n/SIM   ou   /NAO", chatId, env);
@@ -159,7 +229,7 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
             if(Number.isInteger(userState.titulo) && userState.titulo > 0) {
                 const oldLink = userState.text;
                 userState.state = 'waiting_confirm_editar';
-                const message = `Deseja substituir\n\n${messagelink}\n\npor\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\n`;
+                const message = `Deseja substituir\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\npor\n\n${messagelink}\n\n`;
                 await sendMessage(message, chatId, env);
             }else{
                 await sendMessage(`Deseja adicionar este link?\n\n${messagelink}`, chatId, env);
@@ -268,16 +338,16 @@ try {
             break;
 
         case normalize('Deletar'):
-            return await handleItensMenuFlow(userState, messageText, userId, chatId, userName, update, env);
+            return await handleDeleteLink(userState, messageText, userId, chatId, userName, update, env);
             break;
 
-        case normalize('configuracao'):
+        /*case normalize('configuracao'):
             return await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
             break;
 
         case normalize('ver'):
             return await handleListView(userState, messageText, userId, chatId, userName, update, env);
-            break;
+            break;*/
 
         default:
             userState = null;
