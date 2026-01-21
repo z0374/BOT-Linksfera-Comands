@@ -5,10 +5,10 @@ async function handleCRUDLink(userState, messageText, userId, chatId, userName, 
     switch (normalize(userState.state)) {
         case normalize("waiting_list_crud"):
             userState.procesCont = 0;
-            userState.state = 'waiting_start_crud';
-            await saveUserState(env, userId, userState);
             const links = await dataRead("assets", {type:'link'}, env);
-            const taskLink = (messageText.split('_'))[0] == 'editar' ? 'EDITAR' : 'DELETAR';
+            const taskLink = (messageText.split('_'))[0] == '/editar' ? 'EDITAR' : 'DELETAR';
+            userState.state = 'waiting_start_' + taskLink.toLowerCase();
+            await saveUserState(env, userId, userState);
             const message = [];
                 for(const link of links){
             const dataLinks = JSON.parse(link.data);
@@ -69,8 +69,13 @@ async function handleDeleteLink(userState, messageText, userId, chatId, userName
     }
 
     switch (normalize(userState.state)) {
-
-        case normalize("waiting_confirm_delete"):
+        case normalize("waiting_start_deletar"):
+            userState.procesCont = 0;
+            userState.state = "waiting_start_crud";
+            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Iniciando confirmação", {status: 200});
+                    break;
+        case normalize("waiting_confirm_deletar"):
             userState.procesCont = 0;
             switch (normalize(messageText)) {
                 case normalize("SIM"):
