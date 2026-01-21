@@ -26,17 +26,18 @@ _______________ /Selecionar_link${link.id}_${taskLink.toLowerCase()}
         case normalize('waiting_start_crud'):
             userState.procesCont = 0;
             userState.titulo = parseInt(messageText.replace(/\D+/g, ""));
-            const oldLink = await dataRead("assets",{id: parseInt(userState.titulo)}, env);
-            if((!isNaN(userState.titulo)) && oldLink.type == 'link'){
+            const dataLink = await dataRead("assets",{id: parseInt(userState.titulo)}, env);
+            if((!isNaN(userState.titulo)) && dataLink.type == 'link'){
                 if((messageText.split("_"))[2] == "editar"){
-                    userState.text = JSON.parse(oldLink.data);
+                    userState.text = JSON.parse(dataLink.data);
                     await saveUserState(env, userId, userState);
                     messageText = "Adicionar_Link";
                     await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
                         return new Response("Iniciando Edição !", {status: 200});
                 }else if((messageText.split("_"))[2] == "deletar"){
-                    userState.state = 'waiting_confirm_delete';
-                    await sendMessage(`Titulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}`, chatId, env);
+                    userState.state = 'waiting_confirm_deletar';
+                    const deleted = JSON.parse(dataLink);
+                    await sendMessage(`Titulo: ${deleted.titulo}\nLegenda: ${deleted.legenda}\nTexto do Link: ${deleted.texto}\nURL: ${deleted.url}\n   Visibilidade: ${deleted.visible}\n\nTags:\n   ${deleted.tags}`, chatId, env);
                     await sendMessage("Deseja excluir este link?\n   /SIM   |   /NAO", chatId, env);
                     await saveUserState(env, userId, userState);
                         return new Response("Confirmando deleção !", {status: 200});
@@ -75,6 +76,7 @@ async function handleDeleteLink(userState, messageText, userId, chatId, userName
             await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
                 return new Response("Iniciando confirmação", {status: 200});
                     break;
+                    
         case normalize("waiting_confirm_deletar"):
             userState.procesCont = 0;
             switch (normalize(messageText)) {
@@ -120,6 +122,13 @@ async function handleEditLink(userState, messageText, userId, chatId, userName, 
     }
 
     switch (normalize(userState.state)) {
+        
+        case normalize("waiting_start_editar"):
+            userState.procesCont = 0;
+            userState.state = "waiting_start_crud";
+            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Iniciando confirmação", {status: 200});
+                    break;
 
         case normalize('waiting_confirm_editar'):
             userState.procesCont = 0;
