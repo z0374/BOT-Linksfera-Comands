@@ -6,7 +6,13 @@ const comandLinksfera = normalize(commands_manifest[0].name);
         case normalize("waiting_list_crud"):
             userState.procesCont = 0;
             const result = await dataRead("assets", {type:'link'}, env); const taskLink = (messageText.split('_'))[0] == '/editar' ? 'EDITAR' : 'DELETAR';
-            if(result.length == 0){const messageVoid = `Sem links para ${taskLink}`; await sendMessage(messageVoid, chatId, env); await sendMessage("/encerrar   |   /"+comandLinksfera, chatId, env); return new Response(messageVoid, { status:200 })}
+            if(result.length == 0){
+                await saveUserState(env, userId, null);
+                const messageVoid = `Sem links para ${taskLink}`;
+                await sendMessage(messageVoid, chatId, env); await sendMessage("/encerrar   |   /"+comandLinksfera, chatId, env);
+                return new Response(messageVoid, { status:200 });
+                    }
+
                 const links = Array.isArray(result) ? result : [result];
             userState.state = 'waiting_start_' + taskLink.toLowerCase();
             await saveUserState(env, userId, userState);
