@@ -308,14 +308,16 @@ try {
     }
 
     // Determina a seção ativa para roteamento
-    let sectionActive = userState.state.toLowerCase().split('_');
-
-    const validSections = [comandLinksfera, 'Adicionar', 'editar', 'Deletar', 'configuracao', 'ver']
-    .map(v => v.toLowerCase());
-
-    let sectionName =
-    sectionActive.find(part => validSections.includes(part)) 
-    || normalize(messageText);
+    const sectionName = !userState?.state
+  ? messageText
+  : (
+      userState.state
+        .toLowerCase()
+        .split("_")
+        .find(part => [ comandLinksfera, "Adicionar", "editar", "Deletar", "configuracao", "ver" ]
+            .map(v => v.toLowerCase()).includes(part)
+        ) || normalize(messageText)
+            );
 
 
     // Roteamento para a função de fluxo correspondente
