@@ -36,11 +36,12 @@ _______________ /Selecionar_link${link.id}_${taskLink.toLowerCase()}
                         return new Response("Iniciando Edição !", {status: 200});
                 }else if((messageText.split("_"))[2] == "deletar"){
                     userState.state = 'waiting_confirm_deletar';
+                    await saveUserState(env, userId, userState);
                     const deleted = JSON.parse(dataLink.data);
                     await sendMessage(`Titulo: ${deleted.titulo}\nLegenda: ${deleted.legenda}\nTexto do Link: ${deleted.texto}\nURL: ${deleted.url}\n   Visibilidade: ${deleted.visible}\n\nTags:\n   ${deleted.tags}`, chatId, env);
                     await sendMessage("Deseja excluir este link?\n   /SIM   |   /NAO", chatId, env);
-                    await saveUserState(env, userId, userState);
                         return new Response("Confirmando deleção !", {status: 200});
+                            break;
                 }
             }
                 userState.state = "waiting_list_crud";
@@ -298,23 +299,6 @@ try {
     console.error(errorMessage);
     return new Response(errorMessage, {status: 200});
 }
-try {
-    // 2. Lógica de Atualização de Estado Composto (Ex: waiting_section -> waiting_section_configuracao)
-    if (userState.state == "waiting_section" || userState.state.includes("waiting_comand")) {
-        if (messageText == '/ver_dataSave_da_pagina') {
-            //return await handleVerdataSaveFlow(userState, messageText, userId, chatId, userName, update, env);
-        } else {
-            userState.state += '_' + await normalize(messageText);
-            await saveUserState(env, userId, userState);
-        }
-    }
-    
-} catch (error) {
-    const errorMessage = "Erro ao atualizar estados compostos: " + error.stack
-    await sendCallBackMessage(errorMessage, chatId, env);
-    console.error(errorMessage);
-    return new Response(errorMessage, {status: 200});
-}
 
 try {
     // 3. Verifica estado de recebimento de mídia (Inicializa o fluxo se a mensagem for um arquivo)
@@ -340,7 +324,7 @@ try {
         case comandLinksfera:
                 userState.procesCont = 0;
                 userState.proces = normalize(messageText);
-                userState.state = 'waiting_comand_portal';
+                userState.state = 'waiting_section';
                 await saveUserState(env, userId, userState);
                 await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
                     return new Response('Aguardando comando', { status: 200 });
@@ -348,15 +332,15 @@ try {
 
         case normalize('Adicionar'):
             return await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
-            break;
+                  break;
 
         case normalize('editar'):
             return await handleEditLink(userState, messageText, userId, chatId, userName, update, env);
-            break;
+                break;
 
         case normalize('Deletar'):
             return await handleDeleteLink(userState, messageText, userId, chatId, userName, update, env);
-            break;
+                break;
 
         /*case normalize('configuracao'):
             return await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
@@ -365,6 +349,12 @@ try {
         case normalize('ver'):
             return await handleListView(userState, messageText, userId, chatId, userName, update, env);
             break;*/
+
+        case normalize("waiting_section"):
+            userState.state += '_' + await normalize(messageText);
+            await saveUserState(env, userId, userState);
+            await linksfera(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Inicializando seção !", {status:200});
 
         default:
             userState = null;
