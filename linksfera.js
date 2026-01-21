@@ -36,7 +36,7 @@ _______________ /Selecionar_link${link.id}_${taskLink.toLowerCase()}
                         return new Response("Iniciando Edição !", {status: 200});
                 }else if((messageText.split("_"))[2] == "deletar"){
                     userState.state = 'waiting_confirm_deletar';
-                    const deleted = JSON.parse(dataLink);
+                    const deleted = JSON.parse(dataLink.data);
                     await sendMessage(`Titulo: ${deleted.titulo}\nLegenda: ${deleted.legenda}\nTexto do Link: ${deleted.texto}\nURL: ${deleted.url}\n   Visibilidade: ${deleted.visible}\n\nTags:\n   ${deleted.tags}`, chatId, env);
                     await sendMessage("Deseja excluir este link?\n   /SIM   |   /NAO", chatId, env);
                     await saveUserState(env, userId, userState);
@@ -137,13 +137,14 @@ async function handleEditLink(userState, messageText, userId, chatId, userName, 
                     const adding = {
                         titulo: userState.select[0],
                         legenda: userState.select[1],
-                        text: userState.select[2],
+                        texto: userState.select[2],
                         url: userState.select[3],
                         tags: userState.select[4],
                         visible: userState.select[5]
                     };
                     await dataUpdate([[JSON.stringify(adding)], userState.titulo], ['assets', 'data'], chatId, env);
                     userState = null;
+                    await sendMessage("/encerrar   |   /linksfera", chatId, env);
                     break;
 
                 case normalize('NAO'):
@@ -259,7 +260,7 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
                 const adding = {
                     titulo: userState.select[0],
                     legenda: userState.select[1],
-                    text: userState.select[2],
+                    texto: userState.select[2],
                     url: userState.select[3],
                     tags: userState.select[4],
                     visible: userState.select[5]
