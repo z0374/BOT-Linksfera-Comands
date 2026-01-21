@@ -323,7 +323,7 @@ try {
     // Roteamento para a função de fluxo correspondente
     switch (normalize(sectionName)) {
 
-        case comandLinksfera:
+        case normalize(comandLinksfera):
                 userState.procesCont = 0;
                 userState.proces = normalize(messageText);
                 userState.state = 'waiting_section';
