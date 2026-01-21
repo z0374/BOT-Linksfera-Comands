@@ -36,8 +36,9 @@ _______________ /Selecionar_link${link.id}_${taskLink.toLowerCase()}
                         return new Response("Iniciando Edição !", {status: 200});
                 }else if((messageText.split("_"))[2] == "deletar"){
                     userState.state = 'waiting_confirm_deletar';
-                    await saveUserState(env, userId, userState);
                     const deleted = JSON.parse(dataLink.data);
+                    userState.texto = deleted.titulo;
+                    await saveUserState(env, userId, userState);
                     await sendMessage(`Titulo: ${deleted.titulo}\nLegenda: ${deleted.legenda}\nTexto do Link: ${deleted.texto}\nURL: ${deleted.url}\n   Visibilidade: ${deleted.visible}\n\nTags:\n   ${deleted.tags}`, chatId, env);
                     await sendMessage("Deseja excluir este link?\n   /SIM   |   /NAO", chatId, env);
                         return new Response("Confirmando deleção !", {status: 200});
@@ -85,7 +86,7 @@ async function handleDeleteLink(userState, messageText, userId, chatId, userName
                     userState.state = null;
                     await saveUserState(env, userId, userState);
                     await dataDelete("assets", {id:userState.titulo}, env);
-                    await sendMessage(`Link ${userState.titulo} deletado com sucesso !`, chatId, env);
+                    await sendMessage(`Link ${userState.texto} deletado com sucesso !`, chatId, env);
                     await sendMessage("/linksfera   |   /encerrar", chatId, env);
                         return new Response("Deletado com sucesso !", {status: 200})
                             break;
@@ -319,7 +320,6 @@ try {
                     ) || normalize(messageText)
                 );
 
-
     // Roteamento para a função de fluxo correspondente
     switch (normalize(sectionName)) {
 
@@ -352,8 +352,8 @@ try {
             return await handleListView(userState, messageText, userId, chatId, userName, update, env);
             break;*/
 
-        case normalize("waiting_section"):
-            userState.state =  messageText;
+        case normalize("section"):
+            userState.state =  normalize(messageText.split('_')[0]);
             await saveUserState(env, userId, userState);
             await linksfera(userState, messageText, userId, chatId, userName, update, env);
                 return new Response("Inicializando seção !", {status:200});
