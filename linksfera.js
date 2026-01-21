@@ -33,7 +33,9 @@ _______________ /Selecionar_link${link.id}_editar\n\n\n
         case normalize('waiting_list_editar'):
             userState.procesCont = 0;
             userState.titulo = parseInt(messageText.replace(/\D+/g, ""));
-            if((!isNaN(userState.titulo))){
+            const oldLink = await dataRead("assets",{id: parseInt(userState.titulo)}, env);
+            if((!isNaN(userState.titulo)) && oldLink.type == 'link'){
+                userState.text = JSON.parse(oldLink.data);
                 await saveUserState(env, userId, userState);
                 messageText = "Adicionar_Link";
                 await handleAddedLink(userState, messageText, userId, chatId, userName, update, env);
@@ -155,8 +157,8 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
             const adding = userState.select;
             const messagelink = `Titulo: ${adding[0]}\nLegenda: ${adding[1]}\nTexto do Link: ${adding[2]}\nURL: ${adding[3]}\n   Visibilidade: ${(await normalize(messageText)).toUpperCase()}\n\nTags:\n   ${adding[4]}`;
             if(Number.isInteger(userState.titulo) && userState.titulo > 0) {
+                const oldLink = userState.text;
                 userState.state = 'waiting_confirm_editar';
-                const oldLink = JSON.parse((await dataRead("assets",{id: parseInt(userState.titulo)}, env)).data);
                 const message = `Deseja substituir\n\n${messagelink}\n\npor\n\nTitulo: ${oldLink.titulo}\nLegenda: ${oldLink.legenda}\nTexto do Link: ${oldLink.texto}\nURL: ${oldLink.url}\n   Visibilidade: ${oldLink.visible}\n\nTags:\n   ${oldLink.tags}\n\n`;
                 await sendMessage(message, chatId, env);
             }else{
