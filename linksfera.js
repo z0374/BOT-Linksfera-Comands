@@ -1,14 +1,14 @@
 import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete } from "../../engine/engine.index.js";
 
 async function handleCRUDLink(userState, messageText, userId, chatId, userName, update, env) {
-    
+const comandLinksfera = normalize(commands_manifest[0].name);
     switch (normalize(userState.state)) {
         case normalize("waiting_list_crud"):
             userState.procesCont = 0;
             const result = await dataRead("assets", {type:'link'}, env);
                 const links = Array.isArray(result) ? result : [result];
-
             const taskLink = (messageText.split('_'))[0] == '/editar' ? 'EDITAR' : 'DELETAR';
+            if(!links){const messageVoid = `Sem links para ${taskLink}`; await sendMessage(messageVoid, chatId, env); await sendMessage("/encerrar   |   /"+comandLinksfera, chatId, env); return new Response(messageVoid, { status:200 })}
             userState.state = 'waiting_start_' + taskLink.toLowerCase();
             await saveUserState(env, userId, userState);
             const message = [];
@@ -21,7 +21,7 @@ _______________ /Selecionar_link${link.id}_${taskLink.toLowerCase()}
                         `);
                 }
             await sendMessage(`Olá Sr. ${userName},\nEscolha qual registro deseja ${taskLink}.:`, chatId, env);
-            await sendMessage(message.join("\n\n\n"), chatId, env);
+            await sendMessage(message.join("\n\n\n") + "\n\n/encerrar   |   /" + comandLinksfera, chatId, env);
             return new Response('Aguardando selecionar!', { status: 200 });
                 break;
 
@@ -89,14 +89,14 @@ async function handleDeleteLink(userState, messageText, userId, chatId, userName
                     await saveUserState(env, userId, userState);
                     await dataDelete("assets", {id:userState.titulo}, env);
                     await sendMessage(`Link ${userState.texto} deletado com sucesso !`, chatId, env);
-                    await sendMessage("/linksfera   |   /encerrar", chatId, env);
+                    await sendMessage("/" + comandLinksfera + "   |   /encerrar", chatId, env);
                         return new Response("Deletado com sucesso !", {status: 200})
                             break;
 
                 case normalize('NAO'):
                     userState.state = null;
                     await saveUserState(env, userId, userState);
-                    await sendMessage(`Certo Sr. ${userName},\nDeseja /encerrar ou /linksfera ?`, chatId, env);
+                    await sendMessage(`Certo Sr. ${userName},\nDeseja /encerrar ou /${comandLinksfera} ?`, chatId, env);
                         return new Response("Deletar foi cancelado !", {status: 200});
                             break;
             
@@ -148,7 +148,7 @@ async function handleEditLink(userState, messageText, userId, chatId, userName, 
                     };
                     await dataUpdate([[JSON.stringify(adding)], userState.titulo], ['assets', 'data'], chatId, env);
                     userState = null;
-                    await sendMessage("/encerrar   |   /linksfera", chatId, env);
+                    await sendMessage("/encerrar   |   /" + comandLinksfera, chatId, env);
                     break;
 
                 case normalize('NAO'):
