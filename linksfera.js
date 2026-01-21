@@ -353,13 +353,13 @@ try {
             break;*/
 
         case normalize("waiting_section"):
-            userState.state += '_' + await normalize(messageText);
+            userState.state =  messageText;
             await saveUserState(env, userId, userState);
             await linksfera(userState, messageText, userId, chatId, userName, update, env);
                 return new Response("Inicializando seção !", {status:200});
 
         default:
-            userState = null;
+            //userState = null;
             await saveUserState(env, userId, userState);
             const mensagem = 'Comando ou estado de usuário desconhecido.';
             await sendMessage(mensagem, chatId, env);
