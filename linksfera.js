@@ -1,4 +1,4 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist } from "../../engine/engine.index.js";
 
 async function handleCRUDLink(userState, messageText, userId, chatId, userName, update, env) {
 const comandLinksfera = normalize(commands_manifest[0].name);
@@ -64,6 +64,72 @@ _______________ /Selecionar_link${link.id}_${taskLink.toLowerCase()}
             break;
     }
 }
+
+async function handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env) {
+const comandLinksfera = normalize(commands_manifest[0].name);
+
+    switch (normalize(messageText)) {
+        case normalize("start_configuracao"):
+            userState.procesCont = 0;
+            userState.state = "waiting_logo_config";
+            saveUserState(env, userId, userState);
+            await sendMessage(`Certo Sr. ${userName}\nComece me enviando a logo do Portal de links ?`, chatId, env);
+                break;
+    
+        default:
+            break;
+    }
+
+    switch (normalize(userState.state)) {
+
+        case normalize("waiting_logo_config"):
+            userState.procesCont = 0;
+            userState.state = "waiting_Texto_config";
+            saveUserState(env, userId, userState);
+            await sendMessage(`Certo Sr. ${userName}\nAgora me envie o texto que irá aparecer no rodapé?`, chatId, env);
+                break;
+
+        case normalize("waiting_Texto_config"):
+            userState.procesCont = 0;
+            userState.state = "waiting_colorP_config";
+            saveUserState(env, userId, userState);
+            await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor primária do Portal?\n`, chatId, env);
+                break;
+
+        case normalize("waiting_colorP_config"):
+            userState.procesCont = 0;
+            userState.state = "waiting_colorS_config";
+            saveUserState(env, userId, userState);
+            await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor secundária do Portal?\n`, chatId, env);
+                break;
+
+        case normalize("waiting_colorS_config"):
+            userState.procesCont = 0;
+            userState.state = "waiting_colorD_config";
+            saveUserState(env, userId, userState);
+            await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor de destaque do Portal?\n`, chatId, env);
+                break;
+
+        case normalize("waiting_colorD_config"):
+            userState.procesCont = 0;
+            await sendMessage(`Certo Sr. ${userName}\nAgora selecione até 3 links para comunicação que aparecera no rodapé do Portal?\n(ex.: e-mail, tell, whatsapp, linkedin e etc).`, chatId, env);
+            const dataLinks = await dataRead("assets", {type: "links"}, env);
+                const linksSelect = [];
+                for(const link of dataLinks){
+                        const dataLink = JSON.stringify(link.data);
+                    linksSelect.push(`Link: ${dataLink.titulo}   /select_link${link.id}`);
+                }
+            await sendMessage(linksSelect.join("\n\n"), chatId, env);
+                
+                break;
+
+        
+    
+        default:
+            break;
+    }
+ }
+
 async function handleDeleteLink(userState, messageText, userId, chatId, userName, update, env) {
     switch (normalize(messageText)) {
 
@@ -335,7 +401,7 @@ try {
                 userState.proces = normalize(messageText);
                 userState.state = 'waiting_section';
                 await saveUserState(env, userId, userState);
-                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /editar_link\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
+                await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_Link - /editar_link\n\n /Deletar_link - /configuracao_link\n\n /ver_links --- /encerrar`, chatId, env);
                     return new Response('Aguardando comando', { status: 200 });
                         break;
 
@@ -351,10 +417,12 @@ try {
             return await handleDeleteLink(userState, messageText, userId, chatId, userName, update, env);
                 break;
 
-        /*case normalize('configuracao'):
+        case normalize('configuracao'):
+            const result = await dataExist("config", {type:"portal"},);
+            messageText = result ? "configuracao_link" : "start_configuracao";
             return await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
             break;
-
+/*
         case normalize('ver'):
             return await handleListView(userState, messageText, userId, chatId, userName, update, env);
             break;*/
