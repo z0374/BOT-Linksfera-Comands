@@ -258,7 +258,9 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
                     break;
 
         default:
-            break;
+            await sendMessage("Estado de usuário não identificado !", chatId, env);
+            return new Response("Estado de usuário indisponível !", {status:200});
+                break;
     }
 }
 
