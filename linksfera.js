@@ -5,7 +5,9 @@ async function handleCRUDLink(userState, messageText, userId, chatId, userName, 
     switch (normalize(userState.state)) {
         case normalize("waiting_list_crud"):
             userState.procesCont = 0;
-            const links = await dataRead("assets", {type:'link'}, env);
+            const result = await dataRead("assets", {type:'link'}, env);
+                const links = Array.isArray(result) ? result : [result];
+
             const taskLink = (messageText.split('_'))[0] == '/editar' ? 'EDITAR' : 'DELETAR';
             userState.state = 'waiting_start_' + taskLink.toLowerCase();
             await saveUserState(env, userId, userState);
