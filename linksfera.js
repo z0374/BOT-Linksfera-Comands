@@ -8,7 +8,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
             const result = await dataRead("assets", {type:'link'}, env);
                 const links = Array.isArray(result) ? result : [result];
             const taskLink = (messageText.split('_'))[0] == '/editar' ? 'EDITAR' : 'DELETAR';
-            if(!links){const messageVoid = `Sem links para ${taskLink}`; await sendMessage(messageVoid, chatId, env); await sendMessage("/encerrar   |   /"+comandLinksfera, chatId, env); return new Response(messageVoid, { status:200 })}
+            if(links.length==0){const messageVoid = `Sem links para ${taskLink}`; await sendMessage(messageVoid, chatId, env); await sendMessage("/encerrar   |   /"+comandLinksfera, chatId, env); return new Response(messageVoid, { status:200 })}
             userState.state = 'waiting_start_' + taskLink.toLowerCase();
             await saveUserState(env, userId, userState);
             const message = [];
