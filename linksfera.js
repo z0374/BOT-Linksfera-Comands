@@ -1,4 +1,4 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia } from "../../engine/engine.index.js";
 
 async function handleCRUDLink(userState, messageText, userId, chatId, userName, update, env) {
 const comandLinksfera = normalize(commands_manifest[0].name);
@@ -74,7 +74,8 @@ const comandLinksfera = normalize(commands_manifest[0].name);
             userState.state = "waiting_logo_config";
             saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nComece me enviando a logo do Portal de links ?`, chatId, env);
-                break;
+                return new Response("Aguardando logo.", {status: 200});
+                    break;
     
         default:
             break;
@@ -84,47 +85,148 @@ const comandLinksfera = normalize(commands_manifest[0].name);
 
         case normalize("waiting_logo_config"):
             userState.procesCont = 0;
+             const agoraItemsMenu = new Date();
+            let itemMenuFileId, itemMenuMimeType;
+
+            // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
+            if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
+                itemMenuFileId = update.message.document.file_id;
+                itemMenuMimeType = update.message.document.mime_type;
+            } else if (update.message?.photo) {
+                itemMenuFileId = update.message.photo.pop().file_id;
+                itemMenuMimeType = 'image/jpeg';
+            } else {
+                await sendMessage('Por favor, envie uma imagem válida para o item do menu.', chatId, env);
+                return new Response('OK');
+            }
+
+            const nameImageItemMenu = "logoLinksfera" + await normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
+
+            try {
+                // 2. Chamada corrigida para 'image' com o MIME Type
+                const imgId = await image(itemMenuFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
+                const imageItemMenu = [imgId, "img"];
+                userState.select.push(imageItemMenu);
+            } catch (error) {
+                return new Response('OK');
+            }
             userState.state = "waiting_Texto_config";
             saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie o texto que irá aparecer no rodapé?`, chatId, env);
-                break;
+                return new Response("Aguardando logo.", {status: 200});
+                    break;
 
         case normalize("waiting_Texto_config"):
             userState.procesCont = 0;
+                userState.titulo = messageText;
             userState.state = "waiting_colorP_config";
             saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor primária do Portal?\n`, chatId, env);
-                break;
+                return new Response("Aguardando colorP.", {status: 200});
+                    break;
 
         case normalize("waiting_colorP_config"):
             userState.procesCont = 0;
+                userState.titulo += "[_C_]" + messageText;
             userState.state = "waiting_colorS_config";
             saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor secundária do Portal?\n`, chatId, env);
-                break;
+                return new Response("Aguardando colorS.", {status: 200});
+                    break;
 
         case normalize("waiting_colorS_config"):
             userState.procesCont = 0;
+                userState.titulo += "[_C_]" + messageText ;
             userState.state = "waiting_colorD_config";
             saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor de destaque do Portal?\n`, chatId, env);
-                break;
+                return new Response("Aguardando colorD.", {status: 200});
+                    break;
 
         case normalize("waiting_colorD_config"):
             userState.procesCont = 0;
-            await sendMessage(`Certo Sr. ${userName}\nAgora selecione até 3 links para comunicação que aparecera no rodapé do Portal?\n(ex.: e-mail, tell, whatsapp, linkedin e etc).`, chatId, env);
             const dataLinks = await dataRead("assets", {type: "links"}, env);
+                    userState.state = "waiting_links_config";
+                if(normalize(messageText) == normalize("pular") || dataLinks.length == 0){
+                    await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
+                        break;
+                }
+
+                if(userState.select.length == 2){
+                    userState.select.push(messageText.replace(/\D/g, ""));
+                    await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
+                        break;
+                    }
+                        else{
+
+            await sendMessage(`Certo Sr. ${userName}\nAgora selecione até 3 links para contato que aparecera no rodapé do Portal?\n(ex.: e-mail, tell, whatsapp, linkedin e etc).`, chatId, env);
+                const confirmSelect = normalize((messageText.split("_"))[0]) === "selecionar" ? true : false; 
+                
+                if(confirmSelect) {
+                    userState.select.push(messageText.replace(/\D/g, ""));
+                }else{
+                    userState.titulo = "[_C_]" + messageText;
+                }
+
                 const linksSelect = [];
                 for(const link of dataLinks){
-                        const dataLink = JSON.stringify(link.data);
-                    linksSelect.push(`Link: ${dataLink.titulo}   /select_link${link.id}`);
+                        const dataLink = JSON.parse(link.data);
+                    linksSelect.push(`Link: ${dataLink.titulo}   /Selecionar_link${link.id}`);
                 }
-            await sendMessage(linksSelect.join("\n\n"), chatId, env);
-                
-                break;
+                userState.state = "waiting_colorD_config";
+                await saveUserState(env, userId, userState);
+            await sendMessage(linksSelect.join("\n\n") + "\n\n/PULAR", chatId, env);
+                return new Response("Aguardando links.", {status: 200});
 
+                }
+                    break;
         
-    
+        case normalize("waiting_links_config"):
+            userState.procesCont = 0;
+            userState.state = "waiting_confirm_config";
+            await saveUserState(env, userId, userState);
+            const dataConf = userState.titulo.split("[_C_]");
+            const selectConf = userState.select;
+            let logoLinks;
+            const linksFooter = [];
+
+            for(const v of selectConf){
+                if(isArray(v)) {
+                    logoLinks = await downloadGdrive(v[0], env, chatId);
+                }else {
+                    linksFooter.push(JSON.parse((await dataRead("assets", {id: v}, env)).data).texto);
+                 }
+            }
+
+            const messageConfirm = `
+Cor primária: ${dataConf[1]}            
+cor Secundária: ${dataConf[2]}
+cor Destaque: ${dataConf[3]}
+Rodapé:
+    <b>${dataConf[0]}</b>
+    ${linksFooter[0]}
+${linksFooter[1]}   |   ${linksFooter[2]}
+            `;
+            await sendMidia([logoLinks, messageConfirm], chatId, env);
+            await sendMessage("/SIM   |   /NAO", chatId, env);
+                return new Response("Aguardando confirmação", {status: 200});
+                    break;
+
+        case normalize("waiting_confirm_config"):
+            userState.procesCont = 0;
+        try{
+            const logoLinks = await dataSave(userState.select[0], ["assets", "data, type"], env, chatId);
+            const linksFooter = (userState.select).slice(1);
+            const saveConfig = logoLinks + "[_C_]" + userState.titulo + "[_C_]" + linksFooter.join('[_C_]');
+            await yesOrNo([saveConfig, "linksfera"], ["config", "data, type"], userId, chatId, userState, messageText,env);
+    }catch(error){
+        const message = "Erro ao salvar a configuração linksfera: " + error.stack;
+        await sendCallBackMessage(message,chatId,env);
+        return new Response(message, { status: 200 });
+    }
+        return new Response("Salvo com sucesso!", { status: 200 });
+            break;
+
         default:
             break;
     }
