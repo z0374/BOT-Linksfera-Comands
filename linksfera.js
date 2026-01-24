@@ -71,7 +71,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
     switch (normalize(messageText)) {
         case normalize("start_configuracao"):
             userState.procesCont = 0;
-            userState.state = "waiting_logo_config";
+            userState.state = "waiting_logo_configuracao";
             await saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nComece me enviando a logo do Portal de links ?`, chatId, env);
                 return new Response("Aguardando logo.", {status: 200});
