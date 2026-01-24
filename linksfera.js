@@ -520,7 +520,7 @@ try {
                 break;
 
         case normalize('configuracao'):
-            if(messageText == "configuracao_link"){
+            if(normalize(messageText) == normalize("configuracao_link")){
                 const result = await dataExist("config", {type:"portal"}, env);
                 messageText = result ? "configuracao_link" : "start_configuracao";
                     }
