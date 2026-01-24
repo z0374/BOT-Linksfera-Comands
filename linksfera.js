@@ -83,7 +83,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
 
     switch (normalize(userState.state)) {
 
-        case normalize("waiting_logo_config"):
+        case normalize("waiting_logo_configuracao"):
             userState.procesCont = 0;
              const agoraItemsMenu = new Date();
             let itemMenuFileId, itemMenuMimeType;
@@ -110,43 +110,43 @@ const comandLinksfera = normalize(commands_manifest[0].name);
             } catch (error) {
                 return new Response('OK');
             }
-            userState.state = "waiting_Texto_config";
+            userState.state = "waiting_Texto_configuracao";
             await saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie o texto que irá aparecer no rodapé?`, chatId, env);
                 return new Response("Aguardando logo.", {status: 200});
                     break;
 
-        case normalize("waiting_Texto_config"):
+        case normalize("waiting_Texto_configuracao"):
             userState.procesCont = 0;
                 userState.titulo = messageText;
-            userState.state = "waiting_colorP_config";
+            userState.state = "waiting_colorP_configuracao";
             await saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor primária do Portal?\n`, chatId, env);
                 return new Response("Aguardando colorP.", {status: 200});
                     break;
 
-        case normalize("waiting_colorP_config"):
+        case normalize("waiting_colorP_configuracao"):
             userState.procesCont = 0;
                 userState.titulo += "[_C_]" + messageText;
-            userState.state = "waiting_colorS_config";
+            userState.state = "waiting_colorS_configuracao";
             await saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor secundária do Portal?\n`, chatId, env);
                 return new Response("Aguardando colorS.", {status: 200});
                     break;
 
-        case normalize("waiting_colorS_config"):
+        case normalize("waiting_colorS_configuracao"):
             userState.procesCont = 0;
                 userState.titulo += "[_C_]" + messageText ;
-            userState.state = "waiting_colorD_config";
+            userState.state = "waiting_colorD_configuracao";
             await saveUserState(env, userId, userState);
             await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor de destaque do Portal?\n`, chatId, env);
                 return new Response("Aguardando colorD.", {status: 200});
                     break;
 
-        case normalize("waiting_colorD_config"):
+        case normalize("waiting_colorD_configuracao"):
             userState.procesCont = 0;
             const dataLinks = await dataRead("assets", {type: "links"}, env);
-                    userState.state = "waiting_links_config";
+                    userState.state = "waiting_links_configuracao";
                 if(normalize(messageText) == normalize("pular") || dataLinks.length == 0){
                     await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
                         break;
@@ -173,7 +173,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                         const dataLink = JSON.parse(link.data);
                     linksSelect.push(`Link: ${dataLink.titulo}   /Selecionar_link${link.id}`);
                 }
-                userState.state = "waiting_colorD_config";
+                userState.state = "waiting_colorD_configuracao";
                 await saveUserState(env, userId, userState);
             await sendMessage(linksSelect.join("\n\n") + "\n\n/PULAR", chatId, env);
                 return new Response("Aguardando links.", {status: 200});
@@ -181,9 +181,9 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 }
                     break;
         
-        case normalize("waiting_links_config"):
+        case normalize("waiting_links_configuracao"):
             userState.procesCont = 0;
-            userState.state = "waiting_confirm_config";
+            userState.state = "waiting_confirm_configuracao";
             await saveUserState(env, userId, userState);
             const dataConf = userState.titulo.split("[_C_]");
             const selectConf = userState.select;
@@ -212,7 +212,7 @@ ${linksFooter[1]}   |   ${linksFooter[2]}
                 return new Response("Aguardando confirmação", {status: 200});
                     break;
 
-        case normalize("waiting_confirm_config"):
+        case normalize("waiting_confirm_configuracao"):
             userState.procesCont = 0;
         try{
             const logoLinks = await dataSave(userState.select[0], ["assets", "data, type"], env, chatId);
