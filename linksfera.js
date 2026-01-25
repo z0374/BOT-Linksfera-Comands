@@ -168,7 +168,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 if(confirmSelect) {
                     userState.select.push(messageText.replace(/\D/g, ""));
                 }else{
-                    userState.titulo = "[_C_]" + messageText;
+                    userState.titulo += "[_C_]" + messageText;
                 }
 
                 const linksSelect = [];
