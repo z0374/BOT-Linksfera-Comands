@@ -84,17 +84,14 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 await saveUserState(env, userId, userState);
                 userState.titulo = (await dataRead("config", {type: "linksfera"}, env)).data;
                 const dataConfig = (userState.titulo).split("[_C_]");
-                const selectConf = [dataConfig[0], ...dataConfig.slice(5, 8)];
-                let logoLinks;
-                const linksFooter = [];
+                const selectConf = [...dataConfig.slice(5, 8)];
+                const idDrive = (await dataRead("assets", {id: dataConfig[0]}, env)).data      
+                    let logoLinks = await downloadGdrive(idDrive, env, chatId);
 
+                const linksFooter = [];
                 for(const v of selectConf){
-                    if(Array.isArray(v)) {
-                        const idDrive = (await dataRead("assets", {id: v}, env)).data
-                        logoLinks = await downloadGdrive(idDrive, env, chatId);
-                    }else {
                         linksFooter.push(JSON.parse((await dataRead("assets", {id: v}, env)).data).texto);
-                    }
+                    
                 }
                 const messageConfig = `
     Cor primária: ${dataConfig[2]}            
@@ -102,10 +99,9 @@ const comandLinksfera = normalize(commands_manifest[0].name);
     cor Destaque: ${dataConfig[4]}
     Rodapé:
         <b>${dataConfig[1]}</b>
-        ${linksFooter[0]}
-    ${linksFooter[1]}   |   ${linksFooter[2]}
+           ${linksFooter.join("---\n")}
                 `;
-                await sendMessage(`Olá Sr. ${userName}\n${messageConfig}`, chatId, env);
+                await sendMidia([logoLinks,`Olá Sr. ${userName}\n${messageConfig}`], chatId, env);
                 
             } catch (error) {
                 await sendCallBackMessage(error.stack, chatId, env);
