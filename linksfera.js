@@ -95,12 +95,14 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                         linksCommand.push("/Editar_link" + (i++));
                 }
                 const messageConfig = `
-    Cor primária: ${dataConfig[2]}            
-    Cor Secundária: ${dataConfig[3]}
-    Cor Destaque: ${dataConfig[4]}
-    Rodapé:
-        <b>${dataConfig[1]}</b>
-[ ] ${linksFooter.join("\n[ ] ")}
+Cor primária: ${dataConfig[2]}            
+Cor Secundária: ${dataConfig[3]}
+Cor Destaque: ${dataConfig[4]}
+
+Texto do Rodapé: <b>${dataConfig[1]}</b>
+LINK 01: ${linksFooter[0]}
+LINK 02: ${linksFooter[1]}
+LINK 03: ${linksFooter[2]}
 
 
 /Editar_corPrimaria
