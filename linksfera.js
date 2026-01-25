@@ -1,4 +1,4 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
 
 async function handleCRUDLink(userState, messageText, userId, chatId, userName, update, env) {
 const comandLinksfera = normalize(commands_manifest[0].name);
@@ -106,7 +106,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
         }
             let nameImageItemMenu = "logoLinksfera" + await normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
             try {
-                // 2. Chamada corrigida para 'image' com o MIME Type
+                // 2. Chamada para 'image' com o MIME Type
                 const imgId = await image(itemMenuFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
                 const imageItemMenu = [imgId, "img"];
                 userState.select.push(imageItemMenu);
