@@ -88,7 +88,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 const idDrive = (await dataRead("assets", {id: dataConfig[0]}, env)).data      
                     let logoLinks = await downloadGdrive(idDrive, env, chatId);
 
-                const linksFooter = []; const linksCommand = [];const i = 0;
+                const linksFooter = []; const linksCommand = [];let i = 0;
                 for(const v of selectConf){
                         const linkText = JSON.parse((await dataRead("assets", {id: v}, env)).data).texto
                         linksFooter.push(linkText);
