@@ -218,8 +218,12 @@ ${linksFooter[1]}   |   ${linksFooter[2]}
         case normalize("waiting_confirm_configuracao"):
             userState.procesCont = 0;
         try{
-            const logoLinks = await dataSave(userState.select[0], ["assets", "data, type"], env, chatId);
-            const linksFooter = (userState.select).slice(1);
+            let logoLinks, linksFooter;
+            if (normalize(messageText) == normalize("SIM")) {
+                logoLinks = await dataSave(userState.select[0], ["assets", "data, type"], env, chatId);
+                linksFooter = (userState.select).slice(1);
+            }
+            
             const saveConfig = logoLinks + "[_C_]" + userState.titulo + "[_C_]" + linksFooter.join('[_C_]');
             await yesOrNo([saveConfig, "linksfera"], ["config", "data, type"], userId, chatId, userState, messageText,env);
     }catch(error){
