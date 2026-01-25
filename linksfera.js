@@ -76,6 +76,37 @@ const comandLinksfera = normalize(commands_manifest[0].name);
             await sendMessage(`Certo Sr. ${userName}\nComece me enviando a logo do Portal de links ?`, chatId, env);
                 return new Response("Aguardando logo.", {status: 200});
                     break;
+
+        case normalize("configuracao_link"):
+            userState.procesCont = 0;
+            userState.state = "waiting_logo_configuracao";
+            await saveUserState(env, userId, userState);
+            userState.titulo = (await dataRead("assets", {type: "linksfera"}, env)).data;
+            const dataConfig = (userState.titulo).split("[_C_]");
+            const selectConf = [dataConfig[0], ...dataConfig.slice(5, 8)];
+            let logoLinks;
+            const linksFooter = [];
+
+            for(const v of selectConf){
+                if(Array.isArray(v)) {
+                    const idDrive = (await dataRead("assets", {id: v}, env)).data
+                    logoLinks = await downloadGdrive(idDrive, env, chatId);
+                }else {
+                    linksFooter.push(JSON.parse((await dataRead("assets", {id: v}, env)).data).texto);
+                 }
+            }
+            const messageConfig = `
+Cor primária: ${dataConfig[2]}            
+cor Secundária: ${dataConfig[3]}
+cor Destaque: ${dataConfig[4]}
+Rodapé:
+    <b>${dataConfig[1]}</b>
+    ${linksFooter[0]}
+${linksFooter[1]}   |   ${linksFooter[2]}
+            `;
+            await sendMessage(`Olá Sr. ${userName}\n${messageConfig}`, chatId, env);
+                return new Response("Aguardando logo.", {status: 200});
+                    break;
     
         default:
             break;
@@ -535,7 +566,7 @@ try {
 
         case normalize('configuracao'):
             if(normalize(messageText) == normalize("configuracao_link")){
-                const result = await dataExist("config", {type:"portal"}, env);
+                const result = await dataExist("config", {type:"linksfera"}, env);
                 messageText = result ? "configuracao_link" : "start_configuracao";
                     }
             return await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
