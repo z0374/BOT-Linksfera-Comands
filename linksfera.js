@@ -92,7 +92,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 for(const v of selectConf){
                         const linkText = JSON.parse((await dataRead("assets", {id: v}, env)).data).texto
                         linksFooter.push(linkText);
-                        linksCommand.push("Editar_link" + (i++));
+                        linksCommand.push("/Editar_link" + (i++));
                 }
                 const messageConfig = `
     Cor primária: ${dataConfig[2]}            
