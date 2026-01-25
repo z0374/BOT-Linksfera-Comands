@@ -152,13 +152,15 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                     userState.state = "waiting_links_configuracao";
                 if(normalize(messageText) == normalize("pular") || dataLinks.length == 0){
                     await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
-                        break;
+                        return new Response("Gerando confirmação !", {status: 200});
+                            break;
                 }
 
                 if(userState.select.length == 3){
                     userState.select.push(messageText.replace(/\D/g, ""));
                     await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
-                        break;
+                        return new Response("Gerando confirmação !", {status: 200});
+                            break;
                     }
                         else{
 
