@@ -194,7 +194,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
             const linksFooter = [];
 
             for(const v of selectConf){
-                if(isArray(v)) {
+                if(Array.isArray(v)) {
                     logoLinks = await downloadGdrive(v[0], env, chatId);
                 }else {
                     linksFooter.push(JSON.parse((await dataRead("assets", {id: v}, env)).data).texto);
@@ -236,6 +236,7 @@ ${linksFooter[1]}   |   ${linksFooter[2]}
  }
 
 async function handleDeleteLink(userState, messageText, userId, chatId, userName, update, env) {
+    const comandLinksfera = normalize(commands_manifest[0].name);
     switch (normalize(messageText)) {
 
         case normalize('Deletar_link'):
@@ -288,7 +289,7 @@ async function handleDeleteLink(userState, messageText, userId, chatId, userName
 }
 
 async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
-
+const comandLinksfera = normalize(commands_manifest[0].name);
     switch (normalize(messageText)) {
 
         case normalize('editar_link'):
@@ -347,7 +348,7 @@ async function handleEditLink(userState, messageText, userId, chatId, userName, 
 }
 async function handleAddedLink(userState, messageText, userId, chatId, userName, update, env){
     const visibility = {"ocultar":"hidden", "mostrar":"show", "fixar":"pin"}
-
+    const comandLinksfera = normalize(commands_manifest[0].name);
     switch (normalize(messageText)) {
         case normalize("Adicionar_Link"):
             userState.procesCont = 0;
@@ -444,6 +445,10 @@ async function handleAddedLink(userState, messageText, userId, chatId, userName,
                     url: userState.select[3],
                     tags: userState.select[4],
                     visible: userState.select[5]
+                }
+                if(normalize(messageText) != normalize("NAO") || normalize(messageText) != normalize("SIM")){
+                    await sendMessage("Escolha apenas:\n/SIM   ou   /NAO", chatId, env);
+                        return new Response('Aguardando confirmação', { status: 200 });  
                 }
                 await yesOrNo([JSON.stringify(adding), 'link'], ['assets', 'data,type'], userId, chatId, userState, messageText, env);
             } catch (error) {
