@@ -82,7 +82,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 userState.procesCont = 0;
                 userState.state = "waiting_logo_configuracao";
                 await saveUserState(env, userId, userState);
-                userState.titulo = (await dataRead("assets", {type: "linksfera"}, env)).data;
+                userState.titulo = (await dataRead("config", {type: "linksfera"}, env)).data;
                 const dataConfig = (userState.titulo).split("[_C_]");
                 const selectConf = [dataConfig[0], ...dataConfig.slice(5, 8)];
                 let logoLinks;
