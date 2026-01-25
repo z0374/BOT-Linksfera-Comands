@@ -148,7 +148,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
 
         case normalize("waiting_colorD_configuracao"):
             userState.procesCont = 0;
-            const dataLinks = await dataRead("assets", {type: "links"}, env);
+            const dataLinks = await dataRead("assets", {type: "link"}, env);
                     userState.state = "waiting_links_configuracao";
                 if(normalize(messageText) == normalize("pular") || dataLinks.length == 0){
                     await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
