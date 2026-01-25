@@ -88,7 +88,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 const idDrive = (await dataRead("assets", {id: dataConfig[0]}, env)).data      
                     let logoLinks = await downloadGdrive(idDrive, env, chatId);
 
-                const linksFooter = []; const linksCommand = [];let i = 0;
+                const linksFooter = []; const linksCommand = [];let i = 1;
                 for(const v of selectConf){
                         const linkText = JSON.parse((await dataRead("assets", {id: v}, env)).data).texto
                         linksFooter.push(linkText);
@@ -100,7 +100,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
     Cor Destaque: ${dataConfig[4]}
     Rodapé:
         <b>${dataConfig[1]}</b>
-           []${linksFooter.join("\n[]")}
+[ ] ${linksFooter.join("\n[ ] ")}
 
 
 /Editar_corPrimaria
@@ -111,7 +111,8 @@ const comandLinksfera = normalize(commands_manifest[0].name);
 
 /Editar_textoRodape
 
-${linksCommand.join("\n")}
+${linksCommand[0]}\n
+${linksCommand[1]} - - - ${linksCommand[2]}
                 `;
                 await sendMidia([logoLinks,`Olá Sr. ${userName}\n${messageConfig}`], chatId, env);
                 
