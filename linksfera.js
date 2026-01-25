@@ -88,18 +88,30 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 const idDrive = (await dataRead("assets", {id: dataConfig[0]}, env)).data      
                     let logoLinks = await downloadGdrive(idDrive, env, chatId);
 
-                const linksFooter = [];
+                const linksFooter = []; const linksCommand = [];const i = 0;
                 for(const v of selectConf){
-                        linksFooter.push(JSON.parse((await dataRead("assets", {id: v}, env)).data).texto);
-                    
+                        const linkText = JSON.parse((await dataRead("assets", {id: v}, env)).data).texto
+                        linksFooter.push(linkText);
+                        linksCommand.push("Editar_link" + (i++));
                 }
                 const messageConfig = `
     Cor primária: ${dataConfig[2]}            
-    cor Secundária: ${dataConfig[3]}
-    cor Destaque: ${dataConfig[4]}
+    Cor Secundária: ${dataConfig[3]}
+    Cor Destaque: ${dataConfig[4]}
     Rodapé:
         <b>${dataConfig[1]}</b>
-           ${linksFooter.join("---\n")}
+           []${linksFooter.join("\n[]")}
+
+
+/Editar_corPrimaria
+
+/Editar_corSecundaria
+
+/Editar_corDestaque
+
+/Editar_textoRodape
+
+${linksCommand.join("\n")}
                 `;
                 await sendMidia([logoLinks,`Olá Sr. ${userName}\n${messageConfig}`], chatId, env);
                 
