@@ -155,7 +155,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                         break;
                 }
 
-                if(userState.select.length == 2){
+                if(userState.select.length == 3){
                     userState.select.push(messageText.replace(/\D/g, ""));
                     await handleConfiguracaoLink(userState, messageText, userId, chatId, userName, update, env);
                         break;
