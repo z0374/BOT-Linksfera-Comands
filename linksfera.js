@@ -88,6 +88,7 @@ const comandLinksfera = normalize(commands_manifest[0].name);
              const agoraItemsMenu = new Date();
             let itemMenuFileId, itemMenuMimeType;
 
+        try {
             // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
             if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
                 itemMenuFileId = update.message.document.file_id;
@@ -99,9 +100,11 @@ const comandLinksfera = normalize(commands_manifest[0].name);
                 await sendMessage('Por favor, envie uma imagem válida para o item do menu.', chatId, env);
                 return new Response('OK');
             }
-
-            const nameImageItemMenu = "logoLinksfera" + await normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
-
+        } catch (error) {
+                return new Response('Erro ao extrair imagem da requisição!' + error.stack, {status: 200});
+            
+        }
+            let nameImageItemMenu = "logoLinksfera" + await normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
             try {
                 // 2. Chamada corrigida para 'image' com o MIME Type
                 const imgId = await image(itemMenuFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
