@@ -1,0 +1,54 @@
+import { handleCRUDLink } from "./crud.js";
+
+export async function handleDeleteLink(userState, messageText, userId, chatId, userName, update, env) {
+    const comandLinksfera = normalize(commands_manifest[0].name);
+    switch (normalize(messageText)) {
+
+        case normalize('Deletar_link'):
+            userState.procesCont = 0;
+            userState.state = "waiting_list_crud";
+            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Listando Items", {status: 200});
+                break;
+    
+        default:
+            break;
+    }
+
+    switch (normalize(userState.state)) {
+        case normalize("waiting_start_deletar"):
+            userState.procesCont = 0;
+            userState.state = "waiting_start_crud";
+            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+                return new Response("Iniciando confirmação", {status: 200});
+                    break;
+                    
+        case normalize("waiting_confirm_deletar"):
+            userState.procesCont = 0;
+            switch (normalize(messageText)) {
+                case normalize("SIM"):
+                    userState.state = null;
+                    await saveUserState(env, userId, userState);
+                    await dataDelete("assets", {id:userState.titulo}, env);
+                    await sendMessage(`Link ${userState.texto} deletado com sucesso !`, chatId, env);
+                    await sendMessage("/" + comandLinksfera + "   |   /encerrar", chatId, env);
+                        return new Response("Deletado com sucesso !", {status: 200})
+                            break;
+
+                case normalize('NAO'):
+                    userState.state = null;
+                    await saveUserState(env, userId, userState);
+                    await sendMessage(`Certo Sr. ${userName},\nDeseja /encerrar ou /${comandLinksfera} ?`, chatId, env);
+                        return new Response("Deletar foi cancelado !", {status: 200});
+                            break;
+            
+            default:
+                await sendMessage("Responda apenas.:\n/SIM   ou   /NAO", chatId, env);
+                    break;
+            }
+                break;
+    
+        default:
+            break;
+    }
+}
