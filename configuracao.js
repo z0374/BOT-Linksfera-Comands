@@ -33,24 +33,19 @@ export async function handleConfiguracaoLink(userState, messageText, userId, cha
                 const messageConfig = `
 Cor primária: ${dataConfig[2]}            
 Cor Secundária: ${dataConfig[3]}
-Cor Destaque: ${dataConfig[4]}
-
+Cor Destaque: ${dataConfig[4]}\n
 Texto do Rodapé: <b>${dataConfig[1]}</b>
 LINK 01: ${linksFooter[0]}
 LINK 02: ${linksFooter[1]}
-LINK 03: ${linksFooter[2]}
-
-
-/Editar_config_corPrimaria
-
-/Editar_config_corSecundaria
-
-/Editar_config_corDestaque
-
-/Editar_config_textoRodape
-
+LINK 03: ${linksFooter[2]}\n\n
+/Editar_config_Imagem\n
+/Editar_config_corPrimaria\n
+/Editar_config_corSecundaria\n
+/Editar_config_corDestaque\n
+/Editar_config_textoRodape\n
 ${linksCommand[0]}\n
-${linksCommand[1]} - - - ${linksCommand[2]}
+${linksCommand[1]}\n
+${linksCommand[2]}\n\n/encerrar
                 `;
                 await sendMidia([logoLinks,`Olá Sr. ${userName}\n${messageConfig}`], chatId, env);
                 
