@@ -1,7 +1,7 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
 import { handleCRUDLink } from "./crud.js";
 
-export async function handleEditLink(userState, messageText, userId, chatId, userName, update, env) {
+export async function handleEditLink(SESSION, messageText, userId, chatId, userName, update, env) {
 
 
     const comandLinksfera = normalize(commands_manifest[0].name);
@@ -11,8 +11,8 @@ export async function handleEditLink(userState, messageText, userId, chatId, use
     switch (normalize(messageText)) {
 
         case normalize('editar_link'):
-            userState.state = "waiting_list_crud";
-            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+            SESSION.state = "waiting_list_crud";
+            await handleCRUDLink(SESSION, messageText, userId, chatId, userName, update, env);
                 return new Response("Listando Items", {status: 200});
                 break;
     
@@ -20,40 +20,42 @@ export async function handleEditLink(userState, messageText, userId, chatId, use
             break;
     }
 
-    switch (normalize(userState.state)) {
+    switch (normalize(SESSION.state)) {
 
-        case normalize("waiting_data_edit"):
+        case normalize("waiting_edit_configuracao"):
             const commandEdit = messageText.split("_");
             const indexData = dataIds.indexOf(normalize(commandEdit[3]));
+            const data = JSON.parse((await dataRead("config",{type: "linksfera"}, env)).data)
                 return new Response("Iniciando confirmação", {status: 200});
                     break;
         
         case normalize("waiting_start_editar"):
-            userState.procesCont = 0;
-            userState.state = "waiting_start_crud";
-            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+            SESSION.procesCont = 0;
+            SESSION.state = "waiting_start_crud";
+            await handleCRUDLink(SESSION, messageText, userId, chatId, userName, update, env);
                 return new Response("Iniciando confirmação", {status: 200});
                     break;
 
         case normalize('waiting_confirm_editar'):
-            userState.procesCont = 0;
+            SESSION.procesCont = 0;
             switch (normalize(messageText)) {
                 case normalize('SIM'):
                     const adding = {
-                        titulo: userState.select[0],
-                        legenda: userState.select[1],
-                        texto: userState.select[2],
-                        url: userState.select[3],
-                        tags: userState.select[4],
-                        visible: userState.select[5]
+                        titulo: SESSION.select[0],
+                        legenda: SESSION.select[1],
+                        texto: SESSION.select[2],
+                        url: SESSION.select[3],
+                        tags: SESSION.select[4],
+                        visible: SESSION.select[5]
                     };
-                    await dataUpdate([[JSON.stringify(adding)], userState.titulo], ['assets', 'data'], chatId, env);
-                    userState = null;
+                    await dataUpdate([[JSON.stringify(adding)], SESSION.titulo], ['assets', 'data'], chatId, env);
+                    SESSION = await loadSession(env, userId, true);
+                    await saveSession(env, userId, SESSION);
                     await sendMessage("/encerrar   |   /" + comandLinksfera, chatId, env);
                     break;
 
                 case normalize('NAO'):
-                    userState.state = "waiting_list_editar";
+                    SESSION.state = "waiting_list_editar";
                     await sendMessage("Deseja /encerrar ou /reiniciar !", chatId, env);
                         return new Response('Atualização de link encerrada !', { status: 200 }); 
                             break;
@@ -62,7 +64,7 @@ export async function handleEditLink(userState, messageText, userId, chatId, use
                     await sendMessage("Responda apenas.:\n/SIM   ou   /NAO", chatId, env);
                     break;
             }
-            await saveUserState(env, userId, userState);
+            await saveSession(env, userId, SESSION);
             return new Response('Link atualizado!', { status: 200 }); 
                 break;
     

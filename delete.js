@@ -1,14 +1,14 @@
-import { commands_manifest, normalize, saveUserState, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
 import { handleCRUDLink } from "./crud.js";
 
-export async function handleDeleteLink(userState, messageText, userId, chatId, userName, update, env) {
+export async function handleDeleteLink(SESSION, messageText, userId, chatId, userName, update, env) {
     const comandLinksfera = normalize(commands_manifest[0].name);
     switch (normalize(messageText)) {
 
         case normalize('Deletar_link'):
-            userState.procesCont = 0;
-            userState.state = "waiting_list_crud";
-            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+            SESSION.procesCont = 0;
+            SESSION.state = "waiting_list_crud";
+            await handleCRUDLink(SESSION, messageText, userId, chatId, userName, update, env);
                 return new Response("Listando Items", {status: 200});
                 break;
     
@@ -16,29 +16,29 @@ export async function handleDeleteLink(userState, messageText, userId, chatId, u
             break;
     }
 
-    switch (normalize(userState.state)) {
+    switch (normalize(SESSION.state)) {
         case normalize("waiting_start_deletar"):
-            userState.procesCont = 0;
-            userState.state = "waiting_start_crud";
-            await handleCRUDLink(userState, messageText, userId, chatId, userName, update, env);
+            SESSION.procesCont = 0;
+            SESSION.state = "waiting_start_crud";
+            await handleCRUDLink(SESSION, messageText, userId, chatId, userName, update, env);
                 return new Response("Iniciando confirmação", {status: 200});
                     break;
                     
         case normalize("waiting_confirm_deletar"):
-            userState.procesCont = 0;
+            SESSION.procesCont = 0;
             switch (normalize(messageText)) {
                 case normalize("SIM"):
-                    userState.state = null;
-                    await saveUserState(env, userId, userState);
-                    await dataDelete("assets", {id:userState.titulo}, env);
-                    await sendMessage(`Link ${userState.texto} deletado com sucesso !`, chatId, env);
+                    SESSION = await loadSession(env, userId, true);
+                    await saveSession(env, userId, SESSION);
+                    await dataDelete("assets", {id:SESSION.titulo}, env);
+                    await sendMessage(`Link ${SESSION.texto} deletado com sucesso !`, chatId, env);
                     await sendMessage("/" + comandLinksfera + "   |   /encerrar", chatId, env);
                         return new Response("Deletado com sucesso !", {status: 200})
                             break;
 
                 case normalize('NAO'):
-                    userState.state = null;
-                    await saveUserState(env, userId, userState);
+                    SESSION = await loadSession(env, userId, true);
+                    await saveSession(env, userId, SESSION);
                     await sendMessage(`Certo Sr. ${userName},\nDeseja /encerrar ou /${comandLinksfera} ?`, chatId, env);
                         return new Response("Deletar foi cancelado !", {status: 200});
                             break;
