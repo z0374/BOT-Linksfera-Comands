@@ -338,11 +338,11 @@ Rodapé:
             try {
                 SESSION.procesCont = 0;
                 const response = normalize(messageText);
-
+                let saveConfig;
                 if (response === normalize("SIM")) {
                     try {
                         const logoLinks = await dataSave(SESSION.data.logo, ["assets", "data, type"], env, chatId);
-                        const saveConfig = JSON.stringify({ ...SESSION.data, logo: logoLinks });
+                        saveConfig = JSON.stringify({ ...SESSION.data, logo: logoLinks });
                         
                     } catch (error) {
                         const message = "Erro ao salvar a configuração linksfera: " + (error && error.stack ? error.stack : String(error));
