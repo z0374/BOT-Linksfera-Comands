@@ -1,4 +1,4 @@
-import { commands_manifest, normalize, saveSESSION, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
 
 //todos os SESSION são inicializados externamente
 export async function handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env) {
@@ -10,7 +10,7 @@ export async function handleConfiguracaoLink(SESSION, messageText, userId, chatI
         case normalize("start_configuracao"):
             SESSION.procesCont = 0;
             SESSION.state = "waiting_logo_configuracao";
-            await saveSESSION(env, userId, SESSION);
+            await saveSession(env, userId, SESSION);
             await sendMessage(`Certo Sr. ${userName}\nComece me enviando a logo do Portal de links ?`, chatId, env);
             return new Response("Aguardando logo.", { status: 200 });
             break;
@@ -19,7 +19,7 @@ export async function handleConfiguracaoLink(SESSION, messageText, userId, chatI
             try {
                 SESSION.procesCont = 0;
                 SESSION.state = "waiting_edit_configuracao";
-                await saveSESSION(env, userId, SESSION);
+                await saveSession(env, userId, SESSION);
                 SESSION.titulo = (await dataRead("config", { type: "linksfera" }, env)).data;
 
                 if (!SESSION.titulo) {
@@ -159,7 +159,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     return new Response(message, { status: 200 });
                 }
                 SESSION.state = "waiting_Texto_configuracao";
-                await saveSESSION(env, userId, SESSION);
+                await saveSession(env, userId, SESSION);
                 await sendMessage(`Certo Sr. ${userName}\nAgora me envie o texto que irá aparecer no rodapé?`, chatId, env);
                 return new Response("Aguardando logo.", { status: 200 });
 
@@ -175,7 +175,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 SESSION.procesCont = 0;
                 SESSION.data.text = messageText;
                 SESSION.state = "waiting_colorP_configuracao";
-                await saveSESSION(env, userId, SESSION);
+                await saveSession(env, userId, SESSION);
                 await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor primária do Portal?\n`, chatId, env);
                 return new Response("Aguardando colorP.", { status: 200 });
             } catch (error) {
@@ -190,7 +190,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 SESSION.procesCont = 0;
                 SESSION.data.colorP = messageText;
                 SESSION.state = "waiting_colorS_configuracao";
-                await saveSESSION(env, userId, SESSION);
+                await saveSession(env, userId, SESSION);
                 await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor secundária do Portal?\n`, chatId, env);
                 return new Response("Aguardando colorS.", { status: 200 });
             } catch (error) {
@@ -205,7 +205,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 SESSION.procesCont = 0;
                 SESSION.data.colorS = messageText;
                 SESSION.state = "waiting_colorD_configuracao";
-                await saveSESSION(env, userId, SESSION);
+                await saveSession(env, userId, SESSION);
                 await sendMessage(`Certo Sr. ${userName}\nAgora me envie a cor de destaque do Portal?\n`, chatId, env);
                 return new Response("Aguardando colorD.", { status: 200 });
 
@@ -253,7 +253,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     else if (!SESSION.data.links3) SESSION.data.links3 = id;
                     // incrementa contagem e salva
                     linksCount++;
-                    await saveSESSION(env, userId, SESSION);
+                    await saveSession(env, userId, SESSION);
                     if (linksCount >= 3) {
                         await handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env);
                         return new Response("Gerando confirmação !", { status: 200 });
@@ -261,7 +261,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 } else {
                     // usuário enviou a cor de destaque
                     SESSION.data.colorD = messageText;
-                    await saveSESSION(env, userId, SESSION);
+                    await saveSession(env, userId, SESSION);
                 }
 
                 // Monta lista de links para seleção (exclui links já selecionados)
@@ -274,7 +274,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     linksSelect.push(`Link: ${dataLink.titulo}   /Selecionar_link${link.id}`);
                 }
                 SESSION.state = "waiting_colorD_configuracao";
-                await saveSESSION(env, userId, SESSION);
+                await saveSession(env, userId, SESSION);
                 await sendMessage(linksSelect.join("\n\n") + "\n\n/PULAR", chatId, env);
                 return new Response("Aguardando links.", { status: 200 });
             } catch (error) {
@@ -288,7 +288,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             try {
                 SESSION.procesCont = 0;
                 SESSION.state = "waiting_confirm_configuracao";
-                await saveSESSION(env, userId, SESSION);
+                await saveSession(env, userId, SESSION);
                 const dataConf = { ...SESSION.data };
                 let logoLinks;
                 const linksFooter = [];
@@ -353,7 +353,7 @@ Rodapé:
                 } else if (response === normalize("NAO")) {
                     SESSION = {};
                     SESSION.proces = comandLinksfera;
-                    await saveSESSION(env, userId, SESSION);
+                    await saveSession(env, userId, SESSION);
                     await sendMessage("Configuração cancelada.\n/encerrar   |   /configuracao_Link", chatId, env);
                     return new Response("Configuração cancelada", { status: 200 });
                 } else {
