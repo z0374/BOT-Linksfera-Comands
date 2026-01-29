@@ -342,24 +342,19 @@ Rodapé:
                 if (response === normalize("SIM")) {
                     try {
                         const logoLinks = await dataSave(SESSION.data.logo, ["assets", "data, type"], env, chatId);
-                        const saveConfig = { ...SESSION.data, logo: logoLinks };
-                        await yesOrNo([saveConfig, "linksfera"], ["config", "data, type"], userId, chatId, SESSION, messageText, env);
-                        return new Response("Salvo com sucesso!", { status: 200 });
+                        const saveConfig = JSON.stringify({ ...SESSION.data, logo: logoLinks });
+                        
                     } catch (error) {
                         const message = "Erro ao salvar a configuração linksfera: " + (error && error.stack ? error.stack : String(error));
                         await sendCallBackMessage(message, chatId, env);
                         return new Response(message, { status: 200 });
                     }
-                } else if (response === normalize("NAO")) {
-                    SESSION = {};
-                    SESSION.proces = comandLinksfera;
-                    await saveSession(env, userId, SESSION);
-                    await sendMessage("Configuração cancelada.\n/encerrar   |   /configuracao_Link", chatId, env);
-                    return new Response("Configuração cancelada", { status: 200 });
                 } else {
                     await sendMessage("Responda com /SIM ou /NAO para confirmar.", chatId, env);
                     return new Response("Resposta inválida", { status: 200 });
                 }
+                await yesOrNo([saveConfig, "linksfera"], ["config", "data, type"], userId, chatId, SESSION, messageText, env);
+                        return new Response("Salvo com sucesso!", { status: 200 });
             } catch (error) {
                 const message = 'Erro em waiting_confirm_configuracao: ' + (error && error.stack ? error.stack : String(error));
                 await sendCallBackMessage(message, chatId, env);
