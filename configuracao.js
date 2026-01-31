@@ -361,21 +361,25 @@ Rodapé:
                 SESSION.procesCont = 0;
                 const response = normalize(messageText);
                 let saveConfig;
-                if (response === normalize("SIM") && Array.isArray(SESSION.data.logo)) {
-                    try {
-                        const logoLinks = await dataSave(SESSION.data.logo, ["assets", "data, type"], env, chatId);
-                        saveConfig = JSON.stringify({ ...SESSION.data, logo: logoLinks });
-                        
-                    } catch (error) {
-                        const message = "Erro ao salvar a configuração linksfera: " + (error && error.stack ? error.stack : String(error));
-                        await sendCallBackMessage(message, chatId, env);
-                        return new Response(message, { status: 200 });
+                if (Array.isArray(SESSION.data.logo)) {
+                    if(response === normalize("SIM")){
+                        try {
+                            const logoLinks = await dataSave(SESSION.data.logo, ["assets", "data, type"], env, chatId);
+                            saveConfig = JSON.stringify({ ...SESSION.data, logo: logoLinks });
+                        } catch (error) {
+                            const message = "Erro ao salvar a configuração linksfera: " + (error && error.stack ? error.stack : String(error));
+                            await sendCallBackMessage(message, chatId, env);
+                            return new Response(message, { status: 200 });
+                        }
+                    }
+                    if(response === normalize("NAO")){
+                        await deleteGdrive(SESSION.data.logo[0], env, chatId);
+                    }else{
+                        await sendMessage("Responda com /SIM ou /NAO para confirmar.", chatId, env);
+                        return new Response("Resposta inválida", { status: 200 });
                     }
                 }
-                if(response != normalize("NAO")) {
-                    await sendMessage("Responda com /SIM ou /NAO para confirmar.", chatId, env);
-                    return new Response("Resposta inválida", { status: 200 });
-                }
+
                 await yesOrNo([saveConfig, "linksfera"], ["config", "data, type"], userId, chatId, SESSION, messageText, env);
                         return new Response("Salvo com sucesso!", { status: 200 });
             } catch (error) {
