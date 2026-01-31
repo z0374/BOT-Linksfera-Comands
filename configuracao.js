@@ -127,7 +127,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 const indexData = dataIds.indexOf(commandEdit[2].toLowerCase());
                 const data = JSON.parse((await dataRead("config",{type: "linksfera"}, env)).data);
                 const key = (Object.keys(data))[indexData];
-                SESSION.data = { [key]: data[key] }
+                SESSION.data = { ...data }
                 SESSION.list.push(key, data[key]);
                 SESSION.state = "waiting_new_configuracao" ;
                 await saveSession(env, userId, SESSION);
