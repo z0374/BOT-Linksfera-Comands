@@ -361,7 +361,7 @@ Rodapé:
                 SESSION.procesCont = 0;
                 const response = normalize(messageText);
                 let saveConfig;
-                if (response === normalize("SIM")) {
+                if (response === normalize("SIM") && Array.isArray(SESSION.data.logo)) {
                     try {
                         const logoLinks = await dataSave(SESSION.data.logo, ["assets", "data, type"], env, chatId);
                         saveConfig = JSON.stringify({ ...SESSION.data, logo: logoLinks });
@@ -371,7 +371,8 @@ Rodapé:
                         await sendCallBackMessage(message, chatId, env);
                         return new Response(message, { status: 200 });
                     }
-                } else {
+                }
+                if(response != normalize("NAO")) {
                     await sendMessage("Responda com /SIM ou /NAO para confirmar.", chatId, env);
                     return new Response("Resposta inválida", { status: 200 });
                 }
