@@ -5,7 +5,7 @@ export async function handleEditLink(SESSION, messageText, userId, chatId, userN
 
 
     const comandLinksfera = normalize(commands_manifest[0].name);
-    const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "cordestaque", "link1", "link2", "link3",];
+    
         
 
     switch (normalize(messageText)) {

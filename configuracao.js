@@ -2,7 +2,7 @@ import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMes
 
 //todos os SESSION são inicializados externamente
 export async function handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env) {
-
+const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "cordestaque", "link1", "link2", "link3",];
     const comandLinksfera = normalize(commands_manifest[0].name);
 
     switch (normalize(messageText)) {
