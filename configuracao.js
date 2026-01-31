@@ -404,7 +404,7 @@ Rodapé:
                             return new Response(message, { status: 200 });
                         }
                         if(SESSION.list[0] == 'logo'){
-                            const dataDelete = await dataDelete('assets', data = {id: SESSION.list[1]}, env);
+                            const dataDelete = await dataDelete('assets', {id: SESSION.list[1]}, env);
                             await deleteGdrive(dataDelete.rows.data, env, chatId)
                         }
                     } else if (response === normalize("NAO")) {
