@@ -163,7 +163,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 let nameImageLogo = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
                 const imgId = await image(logoFileId, nameImageLogo, logoMimeType, env, chatId);
                 SESSION.list.push([imgId, "img"]);
-                const newFile = await recFile(logoFileId, env, chatId);
+                const newFile = await downloadFile((await recFile(logoFileId, env, chatId)), env, chatId);
                 const oldFile = await downloadGdrive(((await dataRead('assets', { id: SESSION.list[1] }, env)).data), env, chatId);
                 await sendMessage(`Certo Sr. ${userName},\nDeseja substituir:`, chatId, env);
                 await sendMidia([ oldFile, "" ], chatId, env);
