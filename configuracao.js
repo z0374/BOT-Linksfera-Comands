@@ -1,4 +1,4 @@
-import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image, recFile, downloadFile } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image, recFile, downloadFile, deleteGdrive } from "../../engine/engine.index.js";
 
 //todos os SESSION são inicializados externamente
 export async function handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env) {
@@ -133,8 +133,8 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             SESSION.state = "waiting_new_configuracao";
             await saveSession(env, userId, SESSION);
             await sendMessage(`Certo Sr. ${userName},\nInforme oª novoª ${commandEdit[2]} :`, chatId, env);
-            return new Response("Iniciando confirmação", { status: 200 });
-            break;
+                return new Response("Iniciando confirmação", { status: 200 });
+                    break;
 
         case normalize("waiting_new_configuracao"):
             SESSION.state = "waiting_confirm_configuracao";
@@ -162,7 +162,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 }
                 let nameImageLogo = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
                 const imgId = await image(logoFileId, nameImageLogo, logoMimeType, env, chatId);
-                SESSION.list.push([imgId, "img"]);
+                SESSION.data.logo = [imgId, "img"];
                 const newFile = await downloadFile((await recFile(logoFileId, env, chatId)), env, chatId);
                 const oldFile = await downloadGdrive(((await dataRead('assets', { id: SESSION.list[1] }, env)).data), env, chatId);
                 await sendMessage(`Certo Sr. ${userName},\nDeseja substituir:`, chatId, env);
@@ -204,9 +204,8 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 try {
                     // 2. Chamada para 'image' com o MIME Type
                     const imgId = await image(logoFileId, nameImageLogo, logoMimeType, env, chatId);
-                    const imageItemMenu = [imgId, "img"];
                     if (!Array.isArray(SESSION.select)) SESSION.select = [];
-                    SESSION.data.logo = imageItemMenu;
+                    SESSION.data.logo = [imgId, "img"];
                 } catch (error) {
                     const message = 'Erro ao processar imagem: ' + (error && error.stack ? error.stack : String(error));
                     await sendCallBackMessage(message, chatId, env);
@@ -403,6 +402,10 @@ Rodapé:
                             const message = "Erro ao salvar a configuração linksfera: " + (error && error.stack ? error.stack : String(error));
                             await sendCallBackMessage(message, chatId, env);
                             return new Response(message, { status: 200 });
+                        }
+                        if(SESSION.list[0] == 'logo'){
+                            const dataDelete = await dataDelete('assets', data = {id: SESSION.list[1]}, env);
+                            await deleteGdrive(dataDelete.rows.data, env, chatId)
                         }
                     } else if (response === normalize("NAO")) {
                         await deleteGdrive(SESSION.data.logo[0], env, chatId);
