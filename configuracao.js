@@ -142,6 +142,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             await saveSession(env, userId, SESSION);
             if(SESSION.list[0] == 'logo'){
                 let logoFileId, logoMimeType;
+                const agoraItemsMenu = new Date();
                 try {
                     // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
                     if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
@@ -159,8 +160,8 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     await sendCallBackMessage(message, chatId, env);
                     return new Response(message, { status: 200 });
                 }
-                let nameImageItemMenu = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
-                const imgId = await image(logoFileId, nameImageItemMenu, logoMimeType, env, chatId);
+                let nameImageLogo = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
+                const imgId = await image(logoFileId, nameImageLogo, logoMimeType, env, chatId);
                 SESSION.list.push([imgId, "img"]);
                 const newFile = await recFile(logoFileId, env, chatId);
                 const oldFile = await downloadGdrive(((await dataRead('assets', { id: SESSION.list[1] }, env)).data), env, chatId);
@@ -199,10 +200,10 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     return new Response(message, { status: 200 });
                 }
 
-                let nameImageItemMenu = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
+                let nameImageLogo = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
                 try {
                     // 2. Chamada para 'image' com o MIME Type
-                    const imgId = await image(logoFileId, nameImageItemMenu, logoMimeType, env, chatId);
+                    const imgId = await image(logoFileId, nameImageLogo, logoMimeType, env, chatId);
                     const imageItemMenu = [imgId, "img"];
                     if (!Array.isArray(SESSION.select)) SESSION.select = [];
                     SESSION.data.logo = imageItemMenu;
