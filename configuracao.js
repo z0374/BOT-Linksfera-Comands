@@ -2,7 +2,7 @@ import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMes
 
 //todos os SESSION são inicializados externamente
 export async function handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env) {
-const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "cordestaque", "link1", "link2", "link3",];
+    const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "cordestaque", "link1", "link2", "link3",];
     const comandLinksfera = normalize(commands_manifest[0].name);
 
     switch (normalize(messageText)) {
@@ -39,7 +39,7 @@ const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "corde
                 let logoLinks;
                 try {
                     if (dataConfig.logo) {
-                        const idDrive = (await dataRead("assets", { id: dataConfig.logo[0] }, env)).data;
+                        const idDrive = (await dataRead("assets", { id: dataConfig.logo }, env)).data;
                         logoLinks = await downloadGdrive(idDrive, env, chatId);
                     } else {
                         logoLinks = null;
@@ -122,28 +122,28 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
     }
 
     switch (normalize(SESSION.state)) {
-    
-            case normalize("waiting_edit_configuracao"):
-                const commandEdit = messageText.split("_");
-                const indexData = dataIds.indexOf(commandEdit[2].toLowerCase());
-                const data = JSON.parse((await dataRead("config",{type: "linksfera"}, env)).data);
-                const key = (Object.keys(data))[indexData];
-                SESSION.data = { ...data }
-                SESSION.list.push(key, data[key]);
-                SESSION.state = "waiting_new_configuracao" ;
-                await saveSession(env, userId, SESSION);
-                await sendMessage(`Certo Sr. ${userName},\nInforme oª novoª ${commandEdit[2]} :`, chatId, env);
-                    return new Response("Iniciando confirmação", {status: 200});
-                        break;
+
+        case normalize("waiting_edit_configuracao"):
+            const commandEdit = messageText.split("_");
+            const indexData = dataIds.indexOf(commandEdit[2].toLowerCase());
+            const data = JSON.parse((await dataRead("config", { type: "linksfera" }, env)).data);
+            const key = (Object.keys(data))[indexData];
+            SESSION.data = { ...data }
+            SESSION.list.push(key, data[key]);
+            SESSION.state = "waiting_new_configuracao";
+            await saveSession(env, userId, SESSION);
+            await sendMessage(`Certo Sr. ${userName},\nInforme oª novoª ${commandEdit[2]} :`, chatId, env);
+            return new Response("Iniciando confirmação", { status: 200 });
+            break;
 
         case normalize("waiting_new_configuracao"):
-            SESSION.state = "waiting_confirm_configuracao" ;
+            SESSION.state = "waiting_confirm_configuracao";
             SESSION.data[SESSION.list[0]] = messageText;
-                await saveSession(env, userId, SESSION);
+            await saveSession(env, userId, SESSION);
             await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
             await sendMessage("/SIM   |   /NAO", chatId, env);
-                return new Response("Iniciando confirmação", {status: 200});
-                    break;
+            return new Response("Iniciando confirmação", { status: 200 });
+            break;
 
         case normalize("waiting_logo_configuracao"):
             try {
@@ -363,7 +363,7 @@ Rodapé:
                 const response = normalize(messageText);
                 let saveConfig;
                 if (Array.isArray(SESSION.data.logo)) {
-                    if(response === normalize("SIM")){
+                    if (response === normalize("SIM")) {
                         try {
                             const logoLinks = await dataSave(SESSION.data.logo, ["assets", "data, type"], env, chatId);
                             SESSION.data.logo = logoLinks;
@@ -373,16 +373,16 @@ Rodapé:
                             await sendCallBackMessage(message, chatId, env);
                             return new Response(message, { status: 200 });
                         }
-                    }else if(response === normalize("NAO")){
+                    } else if (response === normalize("NAO")) {
                         await deleteGdrive(SESSION.data.logo[0], env, chatId);
-                    }else{
+                    } else {
                         await sendMessage("Responda com /SIM ou /NAO para confirmar.", chatId, env);
                         return new Response("Resposta inválida", { status: 200 });
                     }
                 }
 
                 await yesOrNo([saveConfig, "linksfera"], ["config", "data, type"], userId, chatId, SESSION, messageText, env);
-                        return new Response("Salvo com sucesso!", { status: 200 });
+                return new Response("Salvo com sucesso!", { status: 200 });
             } catch (error) {
                 const message = 'Erro em waiting_confirm_configuracao: ' + (error && error.stack ? error.stack : String(error));
                 await sendCallBackMessage(message, chatId, env);
