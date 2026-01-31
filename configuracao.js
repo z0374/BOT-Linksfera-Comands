@@ -38,13 +38,14 @@ const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "corde
                 // Get logo with validation
                 let logoLinks;
                 try {
-                    if (Array.isArray(dataConfig.logo)) {
+                    if (dataConfig.logo) {
                         const idDrive = (await dataRead("assets", { id: dataConfig.logo[0] }, env)).data;
                         logoLinks = await downloadGdrive(idDrive, env, chatId);
                     } else {
                         logoLinks = null;
                     }
                 } catch (e) {
+                    await sendCallBackMessage(`Erro ao obter Imagem da Logo` + e.stack, chatId, env);
                     logoLinks = null;
                 }
 
