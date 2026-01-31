@@ -373,8 +373,7 @@ Rodapé:
                             await sendCallBackMessage(message, chatId, env);
                             return new Response(message, { status: 200 });
                         }
-                    }
-                    if(response === normalize("NAO")){
+                    }else if(response === normalize("NAO")){
                         await deleteGdrive(SESSION.data.logo[0], env, chatId);
                     }else{
                         await sendMessage("Responda com /SIM ou /NAO para confirmar.", chatId, env);
