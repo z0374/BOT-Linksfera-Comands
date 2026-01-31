@@ -1,4 +1,4 @@
-import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image } from "../../engine/engine.index.js";
+import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image, recFile } from "../../engine/engine.index.js";
 
 //todos os SESSION são inicializados externamente
 export async function handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env) {
@@ -140,8 +140,38 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             SESSION.state = "waiting_confirm_configuracao";
             SESSION.data[SESSION.list[0]] = messageText;
             await saveSession(env, userId, SESSION);
-            await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
-            await sendMessage("/SIM   |   /NAO", chatId, env);
+            if(SESSION.list[0] == 'logo'){
+                let logoFileId = '';
+                try {
+                    // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
+                    if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
+                        logoFileId = update.message.document.file_id;
+                        itemMenuMimeType = update.message.document.mime_type;
+                    } else if (update.message?.photo) {
+                        logoFileId = update.message.photo.pop().file_id;
+                        itemMenuMimeType = 'image/jpeg';
+                    } else {
+                        await sendMessage('Por favor, envie uma imagem válida.', chatId, env);
+                            return new Response('OK');
+                    }
+                } catch (error) {
+                    const message = 'Erro ao extrair imagem da requisição! ' + (error && error.stack ? error.stack : String(error));
+                    await sendCallBackMessage(message, chatId, env);
+                    return new Response(message, { status: 200 });
+                }
+                let nameImageItemMenu = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
+                const imgId = await image(logoFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
+                SESSION.list.push([imgId, "img"]);
+                const newFile = await recFile(logoFileId, env, chatId);
+                const oldFile = await downloadGdrive(((await dataRead('assets', { id: SESSION.list[1] }, env)).data), env, chatId);
+                await sendMessage(`Certo Sr. ${userName},\nDeseja substituir:`, chatId, env);
+                await sendMidia([ oldFile, "" ], chatId, env);
+                await sendMessage(`POR:`, chatId, env);
+                await sendMidia([ newFile, "" ], chatId, env);
+            }else{
+                await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
+            } 
+           await sendMessage("/SIM   |   /NAO", chatId, env);
             return new Response("Iniciando confirmação", { status: 200 });
             break;
 
@@ -149,30 +179,30 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             try {
                 SESSION.procesCont = 0;
                 const agoraItemsMenu = new Date();
-                let itemMenuFileId, itemMenuMimeType;
+                let logoFileId, itemMenuMimeType;
 
                 try {
                     // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
                     if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
-                        itemMenuFileId = update.message.document.file_id;
+                        logoFileId = update.message.document.file_id;
                         itemMenuMimeType = update.message.document.mime_type;
                     } else if (update.message?.photo) {
-                        itemMenuFileId = update.message.photo.pop().file_id;
+                        logoFileId = update.message.photo.pop().file_id;
                         itemMenuMimeType = 'image/jpeg';
                     } else {
-                        await sendMessage('Por favor, envie uma imagem válida para o item do menu.', chatId, env);
+                        await sendMessage('Por favor, envie uma imagem válida.', chatId, env);
                         return new Response('OK');
                     }
                 } catch (error) {
                     const message = 'Erro ao extrair imagem da requisição! ' + (error && error.stack ? error.stack : String(error));
                     await sendCallBackMessage(message, chatId, env);
                     return new Response(message, { status: 200 });
-
                 }
+
                 let nameImageItemMenu = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
                 try {
                     // 2. Chamada para 'image' com o MIME Type
-                    const imgId = await image(itemMenuFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
+                    const imgId = await image(logoFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
                     const imageItemMenu = [imgId, "img"];
                     if (!Array.isArray(SESSION.select)) SESSION.select = [];
                     SESSION.data.logo = imageItemMenu;
