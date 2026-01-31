@@ -45,7 +45,7 @@ const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "corde
                         logoLinks = null;
                     }
                 } catch (e) {
-                    await sendCallBackMessage(`Erro ao obter Imagem da Logo` + e.stack, chatId, env);
+                    await sendCallBackMessage(`Erro ao obter Imagem da Logo ` + e.stack, chatId, env);
                     logoLinks = null;
                 }
 
