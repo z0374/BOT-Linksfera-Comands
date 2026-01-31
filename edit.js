@@ -21,13 +21,6 @@ export async function handleEditLink(SESSION, messageText, userId, chatId, userN
     }
 
     switch (normalize(SESSION.state)) {
-
-        case normalize("waiting_edit_configuracao"):
-            const commandEdit = messageText.split("_");
-            const indexData = dataIds.indexOf(normalize(commandEdit[3]));
-            const data = JSON.parse((await dataRead("config",{type: "linksfera"}, env)).data)
-                return new Response("Iniciando confirmação", {status: 200});
-                    break;
         
         case normalize("waiting_start_editar"):
             SESSION.procesCont = 0;

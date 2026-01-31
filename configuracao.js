@@ -121,6 +121,26 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
     }
 
     switch (normalize(SESSION.state)) {
+    
+            case normalize("waiting_edit_configuracao"):
+                const commandEdit = messageText.split("_");
+                const indexData = dataIds.indexOf(commandEdit[2].toLowerCase());
+                const data = JSON.parse((await dataRead("config",{type: "linksfera"}, env)).data);
+                const key = (Object.keys(data))[indexData];
+                SESSION.data = { [key]: data[key] }
+                SESSION.list.push(key, data[key]);
+                SESSION.state = "waiting_new_configuracao" ;
+                await sendMessage(`Certo Sr. ${userName},\nInforme oª novoª ${commandEdit[2]} :`, chatId, env);
+                    return new Response("Iniciando confirmação", {status: 200});
+                        break;
+
+        case normalize("waiting_new_configuracao"):
+            SESSION.state = "waiting_confirm_configuracao" ;
+            SESSION.data[SESSION.list[0]] = messageText;
+            await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
+            await sendMessage("/SIM   |   /NAO", chatId, env);
+                return new Response("Iniciando confirmação", {status: 200});
+                    break;
 
         case normalize("waiting_logo_configuracao"):
             try {
