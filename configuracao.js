@@ -141,15 +141,15 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             SESSION.data[SESSION.list[0]] = messageText;
             await saveSession(env, userId, SESSION);
             if(SESSION.list[0] == 'logo'){
-                let logoFileId = '';
+                let logoFileId, logoMimeType;
                 try {
                     // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
                     if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
                         logoFileId = update.message.document.file_id;
-                        itemMenuMimeType = update.message.document.mime_type;
+                        logoMimeType = update.message.document.mime_type;
                     } else if (update.message?.photo) {
                         logoFileId = update.message.photo.pop().file_id;
-                        itemMenuMimeType = 'image/jpeg';
+                        logoMimeType = 'image/jpeg';
                     } else {
                         await sendMessage('Por favor, envie uma imagem válida.', chatId, env);
                             return new Response('OK');
@@ -160,7 +160,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     return new Response(message, { status: 200 });
                 }
                 let nameImageItemMenu = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
-                const imgId = await image(logoFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
+                const imgId = await image(logoFileId, nameImageItemMenu, logoMimeType, env, chatId);
                 SESSION.list.push([imgId, "img"]);
                 const newFile = await recFile(logoFileId, env, chatId);
                 const oldFile = await downloadGdrive(((await dataRead('assets', { id: SESSION.list[1] }, env)).data), env, chatId);
@@ -179,16 +179,16 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             try {
                 SESSION.procesCont = 0;
                 const agoraItemsMenu = new Date();
-                let logoFileId, itemMenuMimeType;
+                let logoFileId, logoMimeType;
 
                 try {
                     // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
                     if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
                         logoFileId = update.message.document.file_id;
-                        itemMenuMimeType = update.message.document.mime_type;
+                        logoMimeType = update.message.document.mime_type;
                     } else if (update.message?.photo) {
                         logoFileId = update.message.photo.pop().file_id;
-                        itemMenuMimeType = 'image/jpeg';
+                        logoMimeType = 'image/jpeg';
                     } else {
                         await sendMessage('Por favor, envie uma imagem válida.', chatId, env);
                         return new Response('OK');
@@ -202,7 +202,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 let nameImageItemMenu = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
                 try {
                     // 2. Chamada para 'image' com o MIME Type
-                    const imgId = await image(logoFileId, nameImageItemMenu, itemMenuMimeType, env, chatId);
+                    const imgId = await image(logoFileId, nameImageItemMenu, logoMimeType, env, chatId);
                     const imageItemMenu = [imgId, "img"];
                     if (!Array.isArray(SESSION.select)) SESSION.select = [];
                     SESSION.data.logo = imageItemMenu;
