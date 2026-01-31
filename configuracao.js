@@ -130,6 +130,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 SESSION.data = { [key]: data[key] }
                 SESSION.list.push(key, data[key]);
                 SESSION.state = "waiting_new_configuracao" ;
+                await saveSession(env, userId, SESSION);
                 await sendMessage(`Certo Sr. ${userName},\nInforme oª novoª ${commandEdit[2]} :`, chatId, env);
                     return new Response("Iniciando confirmação", {status: 200});
                         break;
@@ -137,6 +138,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
         case normalize("waiting_new_configuracao"):
             SESSION.state = "waiting_confirm_configuracao" ;
             SESSION.data[SESSION.list[0]] = messageText;
+                await saveSession(env, userId, SESSION);
             await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
             await sendMessage("/SIM   |   /NAO", chatId, env);
                 return new Response("Iniciando confirmação", {status: 200});
