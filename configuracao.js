@@ -183,7 +183,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 } else {
                     let newValue, newId;
                     if(SESSION.list[0].toLowerCase().includes('link')){
-                        newId = messageText.replace();
+                        newId = messageText.replace(/\D/g, '');
                         newValue = await dataRead("assets", { id: newId }, env);
                     }else{
                         newValue = messageText;
