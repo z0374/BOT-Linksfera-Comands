@@ -127,18 +127,22 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             const commandEdit = messageText.split("_");
             const indexData = dataIds.indexOf(commandEdit[2].toLowerCase());
             const data = JSON.parse((await dataRead("config", { type: "linksfera" }, env)).data);
-            const key = (Object.keys(data))[indexData];
-            SESSION.data = { ...data }
-            SESSION.list.push(key, data[key]);
-            SESSION.state = "waiting_new_configuracao";
-            await saveSession(env, userId, SESSION);
+            let valueConfig;
             let verbo = "Informe";
             let selectLinks;
             if(key.toLowerCase().includes("link")){
                 verbo = "Selecione";
                 const dataLinks = await dataRead("assets", {type: "link"}, env);
-                selectLinks = listLinks(dataLinks, SESSION);
+                selectLinks = listLinks(dataLinks, SESSION.data);
+                valueConfig = await dataRead("assets", {id: data[key]});
+            }else{
+                valueConfig = data[key];
             }
+            const key = (Object.keys(data))[indexData];
+            SESSION.data = { ...data }
+            SESSION.list.push(key, valueConfig);
+            SESSION.state = "waiting_new_configuracao";
+            await saveSession(env, userId, SESSION);
             await sendMessage(`Certo Sr. ${userName},\n${verbo} oª novoª ${commandEdit[2]} :`, chatId, env);
             if(key.toLowerCase().includes("link")) await sendMessage(selectLinks.join("\n\n") + "\n\n/PULAR", chatId, env);
             return new Response("Iniciando confirmação", { status: 200 });
@@ -177,8 +181,16 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     await sendMessage(`POR:`, chatId, env);
                     await sendMidia([newFile, ""], chatId, env);
                 } else {
-                    SESSION.data[SESSION.list[0]] = messageText;
-                    await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
+                    let newValue, newId;
+                    if(SESSION.list[0].toLowerCase().includes('link')){
+                        newId = messageText.replace();
+                        newValue = await dataRead("assets", { id: newId }, env);
+                    }else{
+                        newValue = messageText;
+                        newId = messageText;
+                    }
+                    SESSION.data[SESSION.list[0]] = newId;
+                    await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${newValue} ?`, chatId, env);
                 }
                 await sendMessage("/SIM   |   /NAO", chatId, env);
                 await saveSession(env, userId, SESSION);
