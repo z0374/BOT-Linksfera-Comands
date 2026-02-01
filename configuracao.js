@@ -133,48 +133,55 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             SESSION.state = "waiting_new_configuracao";
             await saveSession(env, userId, SESSION);
             await sendMessage(`Certo Sr. ${userName},\nInforme oª novoª ${commandEdit[2]} :`, chatId, env);
-                return new Response("Iniciando confirmação", { status: 200 });
-                    break;
-
-        case normalize("waiting_new_configuracao"):
-            SESSION.state = "waiting_confirm_configuracao";
-            SESSION.data[SESSION.list[0]] = messageText;
-            await saveSession(env, userId, SESSION);
-            if(SESSION.list[0] == 'logo'){
-                let logoFileId, logoMimeType;
-                const agoraItemsMenu = new Date();
-                try {
-                    // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
-                    if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
-                        logoFileId = update.message.document.file_id;
-                        logoMimeType = update.message.document.mime_type;
-                    } else if (update.message?.photo) {
-                        logoFileId = update.message.photo.pop().file_id;
-                        logoMimeType = 'image/jpeg';
-                    } else {
-                        await sendMessage('Por favor, envie uma imagem válida.', chatId, env);
-                            return new Response('OK');
-                    }
-                } catch (error) {
-                    const message = 'Erro ao extrair imagem da requisição! ' + (error && error.stack ? error.stack : String(error));
-                    await sendCallBackMessage(message, chatId, env);
-                    return new Response(message, { status: 200 });
-                }
-                let nameImageLogo = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
-                const imgId = await image(logoFileId, nameImageLogo, logoMimeType, env, chatId);
-                SESSION.data.logo = [imgId, "img"];
-                const newFile = await downloadFile((await recFile(logoFileId, env, chatId)), env, chatId);
-                const oldFile = await downloadGdrive(((await dataRead('assets', { id: SESSION.list[1] }, env)).data), env, chatId);
-                await sendMessage(`Certo Sr. ${userName},\nDeseja substituir:`, chatId, env);
-                await sendMidia([ oldFile, "" ], chatId, env);
-                await sendMessage(`POR:`, chatId, env);
-                await sendMidia([ newFile, "" ], chatId, env);
-            }else{
-                await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
-            } 
-           await sendMessage("/SIM   |   /NAO", chatId, env);
             return new Response("Iniciando confirmação", { status: 200 });
             break;
+
+        case normalize("waiting_new_configuracao"):
+            try {
+                SESSION.state = "waiting_confirm_configuracao";
+                if (SESSION.list[0] == 'logo') {
+                    let logoFileId, logoMimeType;
+                    const agoraItemsMenu = new Date();
+                    try {
+                        // 1. Extração de File ID e MIME Type da mensagem de entrada (Apenas Imagem)
+                        if (update.message?.document && update.message.document.mime_type.startsWith('image/')) {
+                            logoFileId = update.message.document.file_id;
+                            logoMimeType = update.message.document.mime_type;
+                        } else if (update.message?.photo) {
+                            logoFileId = update.message.photo.pop().file_id;
+                            logoMimeType = 'image/jpeg';
+                        } else {
+                            await sendMessage('Por favor, envie uma imagem válida.', chatId, env);
+                            return new Response('OK');
+                        }
+                    } catch (error) {
+                        const message = 'Erro ao extrair imagem da requisição! ' + (error && error.stack ? error.stack : String(error));
+                        await sendCallBackMessage(message, chatId, env);
+                        return new Response(message, { status: 200 });
+                    }
+                    let nameImageLogo = "logoLinksfera" + normalize(agoraItemsMenu.toISOString().split('T')[0].replace(/-/g, '') + agoraItemsMenu.getMinutes().toString().padStart(2, '0'));
+                    const imgId = await image(logoFileId, nameImageLogo, logoMimeType, env, chatId);
+                    SESSION.data.logo = [imgId, "img"];
+                    const newFile = await downloadFile((await recFile(logoFileId, env, chatId)), env, chatId);
+                    const oldFile = await downloadGdrive(((await dataRead('assets', { id: SESSION.list[1] }, env)).data), env, chatId);
+                    await sendMessage(`Certo Sr. ${userName},\nDeseja substituir:`, chatId, env);
+                    await sendMidia([oldFile, ""], chatId, env);
+                    await sendMessage(`POR:`, chatId, env);
+                    await sendMidia([newFile, ""], chatId, env);
+                } else {
+                    SESSION.data[SESSION.list[0]] = messageText;
+                    await sendMessage(`Certo Sr. ${userName},\nDeseja substituir ${SESSION.list[1]}\nPOR\n${messageText} ?`, chatId, env);
+                }
+                await sendMessage("/SIM   |   /NAO", chatId, env);
+                await saveSession(env, userId, SESSION);
+                    return new Response("Iniciando confirmação", { status: 200 });
+                        break;
+            } catch (error) {
+                const message = 'Erro ao gerar confirmação ' + (error && error.stack ? error.stack : String(error));
+                await sendCallBackMessage(message, chatId, env);
+                return new Response(message, { status: 200 });
+            }
+
 
         case normalize("waiting_logo_configuracao"):
             try {
@@ -403,8 +410,8 @@ Rodapé:
                             await sendCallBackMessage(message, chatId, env);
                             return new Response(message, { status: 200 });
                         }
-                        if(SESSION.list[0] == 'logo'){
-                            const dataDelete = await dataDelete('assets', {id: SESSION.list[1]}, env);
+                        if (SESSION.list[0] == 'logo') {
+                            const dataDelete = await dataDelete('assets', { id: SESSION.list[1] }, env);
                             await deleteGdrive(dataDelete.rows.data, env, chatId)
                         }
                     } else if (response === normalize("NAO")) {
