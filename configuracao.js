@@ -1,5 +1,5 @@
 import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image, recFile, downloadFile, deleteGdrive } from "../../engine/engine.index.js";
-import { listLinks } from "utils.js";
+import { listLinks } from "./utils.js";
 //todos os SESSION são inicializados externamente
 export async function handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env) {
     const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "cordestaque", "link1", "link2", "link3",];
