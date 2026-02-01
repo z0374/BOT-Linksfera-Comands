@@ -134,13 +134,13 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             await saveSession(env, userId, SESSION);
             let verbo = "Informe";
             let selectLinks;
-            if(key.replace(/\d+/g, '') == "link"){
+            if(key.toLowerCase().includes("link")){
                 verbo = "Selecione";
                 const dataLinks = await dataRead("assets", {type: "link"}, env);
                 selectLinks = listLinks(dataLinks, SESSION);
             }
             await sendMessage(`Certo Sr. ${userName},\n${verbo} oª novoª ${commandEdit[2]} :`, chatId, env);
-            if(key.replace(/\d+/g, '') == "link") await sendMessage(selectLinks.join("\n\n") + "\n\n/PULAR", chatId, env);
+            if(key.toLowerCase().includes("link")) await sendMessage(selectLinks.join("\n\n") + "\n\n/PULAR", chatId, env);
             return new Response("Iniciando confirmação", { status: 200 });
             break;
 
