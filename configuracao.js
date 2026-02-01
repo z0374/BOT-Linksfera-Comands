@@ -135,7 +135,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 verbo = "Selecione";
                 const dataLinks = await dataRead("assets", {type: "link"}, env);
                 selectLinks = listLinks(dataLinks, SESSION.data);
-                valueConfig = await dataRead("assets", {id: data[key]});
+                valueConfig = JSON.parse((await dataRead("assets", {id: data[key]})).data).titulo;
             }else{
                 valueConfig = data[key];
             }
@@ -184,7 +184,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     let newValue, newId;
                     if(SESSION.list[0].toLowerCase().includes('link')){
                         newId = messageText.replace(/\D/g, '');
-                        newValue = await dataRead("assets", { id: newId }, env);
+                        newValue = JSON.parse((await dataRead("assets", { id: newId }, env)).data).titulo;
                     }else{
                         newValue = messageText;
                         newId = messageText;
