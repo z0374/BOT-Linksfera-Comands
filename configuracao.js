@@ -1,5 +1,5 @@
 import { commands_manifest, normalize, saveSession, sendCallBackMessage, sendMessage, escapeHTML, yesOrNo, dataRead, dataUpdate, dataDelete, dataExist, dataSave, downloadGdrive, sendMidia, image, recFile, downloadFile, deleteGdrive } from "../../engine/engine.index.js";
-
+import { listLinks } from "utils.js";
 //todos os SESSION são inicializados externamente
 export async function handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env) {
     const dataIds = ["imagem", "textorodape", "corprimaria", "corsecundaria", "cordestaque", "link1", "link2", "link3",];
@@ -132,7 +132,15 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             SESSION.list.push(key, data[key]);
             SESSION.state = "waiting_new_configuracao";
             await saveSession(env, userId, SESSION);
-            await sendMessage(`Certo Sr. ${userName},\nInforme oª novoª ${commandEdit[2]} :`, chatId, env);
+            let verbo = "Informe";
+            let selectLinks;
+            if(key.replace(/\d+/g, '') == "link"){
+                verbo = "Selecione";
+                const dataLinks = await dataRead("assets", {type: "link"}, env);
+                selectLinks = listLinks(dataLinks, SESSION);
+            }
+            await sendMessage(`Certo Sr. ${userName},\n${verbo} oª novoª ${commandEdit[2]} :`, chatId, env);
+            if(key.replace(/\d+/g, '') == "link") await sendMessage(selectLinks.join("\n\n") + "\n\n/PULAR", chatId, env);
             return new Response("Iniciando confirmação", { status: 200 });
             break;
 
@@ -174,8 +182,8 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                 }
                 await sendMessage("/SIM   |   /NAO", chatId, env);
                 await saveSession(env, userId, SESSION);
-                    return new Response("Iniciando confirmação", { status: 200 });
-                        break;
+                return new Response("Iniciando confirmação", { status: 200 });
+                break;
             } catch (error) {
                 const message = 'Erro ao gerar confirmação ' + (error && error.stack ? error.stack : String(error));
                 await sendCallBackMessage(message, chatId, env);
@@ -280,25 +288,27 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             try {
                 SESSION.procesCont = 0;
                 if (!SESSION.data || typeof SESSION.data !== 'object') SESSION.data = {};
+
+                // Leitura do banco
                 const dataLinks = await dataRead("assets", { type: "link" }, env);
                 SESSION.state = "waiting_links_configuracao";
 
-                // Se pular ou não houver links cadastrados, avança para confirmação
+                // --- BLOCO 1: Validação Inicial ---
+                // Se pular ou não houver links cadastrados, avança
                 if (normalize(messageText) == normalize("pular") || !dataLinks || dataLinks.length == 0) {
                     await handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env);
                     return new Response("Gerando confirmação !", { status: 200 });
                 }
 
-                // Conta quantos links já foram selecionados em SESSION.data
+                // --- BLOCO 2: Contagem de Links ---
                 let linksCount = ['links1', 'links2', 'links3'].reduce((acc, k) => acc + (SESSION.data[k] ? 1 : 0), 0);
 
-                // Se já tiver 3 links, avança para confirmação
                 if (linksCount >= 3) {
                     await handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env);
                     return new Response("Gerando confirmação !", { status: 200 });
                 }
 
-                // Detecta comando de seleção mais robusto (remove barra inicial se existir)
+                // --- BLOCO 3: Processamento da Entrada do Usuário ---
                 const cmd = normalize((messageText || '').replace(/^\//, '')).split('_')[0];
                 const confirmSelect = cmd === 'selecionar';
 
@@ -308,35 +318,36 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                         await sendMessage('ID de link inválido. Use /Selecionar_link<ID>.', chatId, env);
                         return new Response('ID inválido', { status: 200 });
                     }
+
+                    // Preenche o slot vazio
                     if (!SESSION.data.links1) SESSION.data.links1 = id;
                     else if (!SESSION.data.links2) SESSION.data.links2 = id;
                     else if (!SESSION.data.links3) SESSION.data.links3 = id;
-                    // incrementa contagem e salva
+
                     linksCount++;
                     await saveSession(env, userId, SESSION);
+
                     if (linksCount >= 3) {
                         await handleConfiguracaoLink(SESSION, messageText, userId, chatId, userName, update, env);
                         return new Response("Gerando confirmação !", { status: 200 });
                     }
                 } else {
-                    // usuário enviou a cor de destaque
+                    // Se não for comando de selecionar, assume que é a entrada da Cor Destaque (etapa anterior)
                     SESSION.data.colorD = messageText;
                     await saveSession(env, userId, SESSION);
                 }
 
-                // Monta lista de links para seleção (exclui links já selecionados)
-                const selectedIds = new Set([SESSION.data && SESSION.data.links1, SESSION.data && SESSION.data.links2, SESSION.data && SESSION.data.links3].filter(Boolean).map(String));
-                const linksSelect = [];
-                for (const link of dataLinks) {
-                    const idStr = String(link.id);
-                    if (selectedIds.has(idStr)) continue;
-                    const dataLink = JSON.parse(link.data);
-                    linksSelect.push(`Link: ${dataLink.titulo}   /Selecionar_link${link.id}`);
-                }
-                SESSION.state = "waiting_colorD_configuracao";
+                // --- BLOCO 4: Geração da Lista (USANDO A NOVA FUNÇÃO) ---
+                // Aqui a mágica acontece: chamamos a função externa
+                const mensagemLista = listLinks(dataLinks, SESSION.data);
+
+                // Prepara o estado para receber a seleção
+                SESSION.state = "waiting_colorD_configuracao"; // Mantém no loop até preencher ou pular
                 await saveSession(env, userId, SESSION);
-                await sendMessage(linksSelect.join("\n\n") + "\n\n/PULAR", chatId, env);
+
+                await sendMessage(mensagemLista, chatId, env);
                 return new Response("Aguardando links.", { status: 200 });
+
             } catch (error) {
                 const message = 'Erro em waiting_colorD_configuracao: ' + (error && error.stack ? error.stack : String(error));
                 await sendCallBackMessage(message, chatId, env);
@@ -434,4 +445,5 @@ Rodapé:
         default:
             break;
     }
+    
 }
