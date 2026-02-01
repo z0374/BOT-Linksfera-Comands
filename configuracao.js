@@ -443,6 +443,8 @@ Rodapé:
                         await sendMessage("Responda com /SIM ou /NAO para confirmar.", chatId, env);
                         return new Response("Resposta inválida", { status: 200 });
                     }
+                }else{
+                    saveConfig = JSON.stringify({ ...SESSION.data });
                 }
 
                 await yesOrNo([saveConfig, "linksfera"], ["config", "data, type"], userId, chatId, SESSION, messageText, env);
