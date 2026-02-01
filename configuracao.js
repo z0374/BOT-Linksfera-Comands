@@ -91,7 +91,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
                     });
                 }
 
-                messageConfig += `\n/Editar_config_Imagem\n
+                messageConfig += `------------------------------\n/Editar_config_Imagem\n
 /Editar_config_corPrimaria\n
 /Editar_config_corSecundaria\n
 /Editar_config_corDestaque\n
@@ -412,7 +412,7 @@ Rodapé:
                         }
                         if (SESSION.list[0] == 'logo') {
                             const dataDel = await dataDelete('assets', { id: SESSION.list[1] }, env);
-                            await deleteGdrive(dataDel.rows.data, env, chatId)
+                            await deleteGdrive(dataDel.rows[0].data, env, chatId);
                         }
                     } else if (response === normalize("NAO")) {
                         await deleteGdrive(SESSION.data.logo[0], env, chatId);
