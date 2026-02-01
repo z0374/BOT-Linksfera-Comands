@@ -127,6 +127,7 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             const commandEdit = messageText.split("_");
             const indexData = dataIds.indexOf(commandEdit[2].toLowerCase());
             const data = JSON.parse((await dataRead("config", { type: "linksfera" }, env)).data);
+            const key = (Object.keys(data))[indexData];
             let valueConfig;
             let verbo = "Informe";
             let selectLinks;
@@ -138,7 +139,6 @@ Texto do Rodapé: <b>${escapeHTML(dataConfig.text || '')}</b>`;
             }else{
                 valueConfig = data[key];
             }
-            const key = (Object.keys(data))[indexData];
             SESSION.data = { ...data }
             SESSION.list.push(key, valueConfig);
             SESSION.state = "waiting_new_configuracao";
